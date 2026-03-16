@@ -391,7 +391,7 @@ const questions = [
     question: '機械学習において、正解ラベルが付いたデータを用いてモデルを学習させる手法として、最も適切なものを選べ。',
     choices: ['教師なし学習','強化学習','転移学習','教師あり学習'],
     correct: 3,
-    simple: `機械学習には大きく3つの手法があります。<br><br><strong>教師あり学習</strong>：正解ラベルが付いたデータを使って学ぶ方法。<br><br><strong>教師なし学習</strong>：正解なしでデータのパターンを自分で見つける方法。<br><br><strong>強化学習</strong>：試行錯誤しながら報酬を最大化するように学ぶ方法。`,
+    simple: `機械学習には大きく3つの手法があります。<br><br><strong>教師あり学習</strong>：正解付きのデータを見せて学ぶ方法。<br><br><strong>教師なし学習</strong>：正解なしで自分でパターンを見つける方法。<br><br><strong>強化学習</strong>：何度も試して、うまくいったやり方を覚えていく方法。`,
     deepdive: `<div class="story-block"><div class="story-lead">柴犬1000枚だけ学習させたら、何が起きたか？</div><div class="story-text">あるAIロボットに<strong>「柴犬の写真だけを1000枚」</strong>見せて「これが犬だ」と学習させました。<br><br>さて、このロボットにトイプードルの写真を見せたらどうなるでしょう？<br><br>答えは「<em>これは犬じゃない</em>」。ロボットは柴犬しか見たことがないので、それ以外の犬種を犬と認識できなくなったのです。<br><br>これが<strong>AIバイアス（偏り）</strong>の正体です。<strong>人間が渡すデータの偏りが、そのままAIの判断の偏りになる</strong>。だからAIを作る側は、多様なデータを学習させることがとても重要です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">3つの機械学習の違いをざっくり整理</span></div><div class="advice-text"><strong>教師あり学習</strong>＝正解付きのデータで学ぶ<br><br><strong>教師なし学習</strong>＝正解なしでデータのグループを自分で見つける<br><br><strong>強化学習</strong>＝試行錯誤しながら報酬を最大化するように学ぶ</div></div>`,
     deepdive_hint: '3種類の違い、つかめましたか？',
     summary: `正解は<strong>「教師あり学習」</strong>です。正解ラベル付きデータで学習する手法。<strong>教師なし学習</strong>（正解なし）・<strong>強化学習</strong>（試行錯誤）との違いも一緒に覚えましょう。`
