@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<title>生成AIパスポート 学習アプリ</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf8f5;
+    --surface: #ffffff;
+    --surface2: #fef3f0;
+    --surface3: #f0f7f4;
+    --pink: #f4a7b9;
+    --pink-light: #fde8ee;
+    --pink-deep: #e8849a;
+    --mint: #a8d5c2;
+    --mint-light: #e6f5ef;
+    --mint-deep: #7bbfa8;
+    --peach: #f7c4a0;
+    --peach-light: #fef0e6;
+    --lavender: #c4b5e8;
+    --lavender-light: #ede8f8;
+    --text: #3d3335;
+    --text-mid: #7a6568;
+    --text-light: #b09a9d;
+    --border: rgba(244,167,185,0.25);
+    --shadow: 0 4px 24px rgba(244,167,185,0.15);
+    --shadow-sm: 0 2px 12px rgba(244,167,185,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; color-scheme: light; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(244,167,185,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(168,213,194,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(196,181,232,0.06) 0%, transparent 70%);
+  }
+  .app { width:100%; max-width:640px; }
+
+  /* ヘッダー */
+  .header { text-align:center; margin-bottom:28px; animation: floatUp 0.7s ease; }
+  .header-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
+    border: 1.5px solid rgba(244,167,185,0.4);
+    color: var(--pink-deep); font-size:11px; font-weight:700; letter-spacing:2px;
+    padding:6px 18px; border-radius:20px; margin-bottom:14px; text-transform:uppercase;
+  }
+  .header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size:23px; font-weight:700; color: var(--text); line-height:1.6;
+  }
+  .header-deco {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top:10px;
+  }
+  .deco-line { width:40px; height:1.5px; background:linear-gradient(90deg, transparent, var(--pink)); }
+  .deco-line.right { background:linear-gradient(90deg, var(--pink), transparent); }
+  .deco-dot { width:5px; height:5px; border-radius:50%; background:var(--pink); }
+
+  /* 進捗 */
+  .progress-wrap { margin-bottom:22px; animation: floatUp 0.7s ease 0.05s both; }
+  .progress-meta { display:flex; justify-content:space-between; font-size:12px; color:var(--text-light); margin-bottom:8px; }
+  .progress-bar { height:6px; background:var(--pink-light); border-radius:10px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--pink), var(--peach)); border-radius:10px; transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+
+  /* ステップインジケーター */
+  .steps { display:flex; align-items:center; justify-content:center; margin-bottom:24px; animation: floatUp 0.7s ease 0.1s both; }
+  .step { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .step-num {
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700;
+    border: 2px solid rgba(244,167,185,0.3);
+    background: var(--surface); color: var(--text-light);
+    transition: all 0.4s ease;
+  }
+  .step-label { font-size:10px; color:var(--text-light); white-space:nowrap; transition:color 0.4s ease; }
+  .step.active .step-num { background:linear-gradient(135deg, var(--pink), var(--pink-deep)); border-color:var(--pink); color:white; box-shadow:0 4px 14px rgba(244,167,185,0.5); }
+  .step.active .step-label { color:var(--pink-deep); font-weight:700; }
+  .step.done .step-num { background:var(--mint-light); border-color:var(--mint); color:var(--mint-deep); }
+  .step.done .step-label { color:var(--mint-deep); }
+  .step-line { width:36px; height:2px; background:var(--pink-light); margin-bottom:19px; transition:background 0.4s ease; border-radius:2px; }
+  .step-line.done { background:linear-gradient(90deg, var(--mint-light), var(--mint)); }
+
+  /* カード */
+  .card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--pink), var(--peach), var(--mint));
+    border-radius:24px 24px 0 0;
+  }
+
+  /* 深掘りカード */
+  .deepdive-card {
+    background: var(--surface); border: 1.5px solid rgba(247,196,160,0.4);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: 0 4px 24px rgba(247,196,160,0.2);
+    position:relative; overflow:hidden;
+  }
+  .deepdive-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--peach), var(--lavender));
+    border-radius:24px 24px 0 0;
+  }
+
+  /* タグ */
+  .step-tag {
+    display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:1.5px;
+    padding:5px 14px; border-radius:20px; margin-bottom:18px; text-transform:uppercase;
+    background:var(--pink-light); border:1.5px solid rgba(244,167,185,0.4); color:var(--pink-deep);
+  }
+  .step-tag.s2 { background:var(--peach-light); border-color:rgba(247,196,160,0.5); color:#c47a40; }
+  .step-tag.s3 { background:var(--lavender-light); border-color:rgba(196,181,232,0.5); color:#7a6ab8; }
+  .step-tag.s4 { background:var(--mint-light); border-color:rgba(168,213,194,0.5); color:var(--mint-deep); }
+  .deepdive-tag {
+    display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:1.5px;
+    padding:5px 14px; border-radius:20px; margin-bottom:18px; text-transform:uppercase;
+    background:var(--peach-light); border:1.5px solid rgba(247,196,160,0.5); color:#c47a40;
+  }
+
+  /* 問題番号（シンプル） */
+  .q-num-simple {
+    font-size:12px; color:var(--text-light); text-align:right;
+    margin-bottom:10px; font-weight:700; letter-spacing:1px;
+  }
+  .question-text {
+    font-family:'Shippori Mincho', serif; font-size:16px; line-height:1.9;
+    margin-bottom:22px; padding:18px 20px;
+    background: linear-gradient(135deg, var(--surface2), #fff9f7);
+    border-radius:16px; border-left:3px solid var(--pink);
+    color: var(--text);
+  }
+
+  /* 選択肢 */
+  .choices { display:flex; flex-direction:column; gap:10px; margin-bottom:22px; }
+  .choice {
+    display:flex; align-items:center; gap:12px; padding:14px 18px;
+    background: var(--surface); border: 1.5px solid rgba(244,167,185,0.2);
+    border-radius:14px; font-size:14px; color:#5a4a4d;
+    font-family:'Shippori Mincho', serif;
+    transition:all 0.2s ease; line-height:1.6;
+  }
+  .choice.clickable { cursor:pointer; }
+  .choice.clickable:hover { border-color:var(--pink); background:var(--pink-light); color:var(--text); transform:translateX(4px); box-shadow:var(--shadow-sm); }
+  .choice.selected { border-color:var(--pink-deep); background:var(--pink-light); color:var(--text); box-shadow:var(--shadow-sm); }
+  .choice.correct { border-color:var(--mint-deep); background:var(--mint-light); color:var(--text); }
+  .choice.wrong { border-color:#e8a0aa; background:#fdf0f2; color:var(--text-light); text-decoration:line-through; }
+  .choice-num {
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; transition:all 0.2s ease;
+    background:var(--pink-light); color:var(--pink-deep); border:1.5px solid rgba(244,167,185,0.4);
+  }
+  .choice.selected .choice-num { background:var(--pink-deep); color:white; border-color:var(--pink-deep); }
+  .choice.correct .choice-num { background:var(--mint-deep); color:white; border-color:var(--mint-deep); }
+  .choice.wrong .choice-num { background:#f0c4c8; color:#c47a80; border-color:#e8a0aa; }
+
+  /* 解説ボックス */
+  .simple-explanation { background:var(--surface2); border-radius:16px; padding:22px; margin-bottom:22px; border:1px solid rgba(244,167,185,0.15); }
+  .explanation-title {
+    font-size:11px; font-weight:700; color:#c47a40; letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .explanation-title::before { content:''; width:3px; height:14px; background:var(--peach); border-radius:2px; display:inline-block; }
+  .explanation-text { font-size:14px; line-height:1.9; color:var(--text); }
+  .explanation-text strong { color:#c47a40; }
+
+  /* 分岐ボタン */
+  .branch-buttons { display:flex; flex-direction:column; gap:10px; }
+  .btn-branch-more {
+    width:100%; padding:14px; border-radius:14px;
+    font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease;
+    background:var(--peach-light); border:1.5px solid rgba(247,196,160,0.6); color:#c47a40;
+  }
+  .btn-branch-more:hover { background:var(--peach); color:white; border-color:var(--peach); transform:translateY(-2px); box-shadow:0 6px 20px rgba(247,196,160,0.4); }
+  .btn-branch-ok {
+    width:100%; padding:14px; border-radius:14px;
+    font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease;
+    background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; border:none;
+    box-shadow:0 4px 16px rgba(244,167,185,0.4);
+  }
+  .btn-branch-ok:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+
+  /* ストーリーブロック */
+  .story-block {
+    background:linear-gradient(135deg, var(--lavender-light), var(--peach-light));
+    border:1.5px solid rgba(196,181,232,0.3); border-radius:16px; padding:22px; margin-bottom:18px; position:relative;
+  }
+  .story-block::before { content:'📖'; font-size:18px; position:absolute; top:-10px; left:18px; background:var(--surface); padding:0 6px; }
+  .story-lead { font-family:'Shippori Mincho',serif; font-size:16px; font-weight:700; color:#7a6ab8; line-height:1.6; margin-bottom:14px; }
+  .story-text { font-size:14px; line-height:2; color:var(--text); }
+  .story-text strong { color:#c47a40; }
+  .story-text em { color:var(--mint-deep); font-style:normal; font-weight:700; }
+  .quote-block {
+    border-left:3px solid var(--lavender); padding:12px 18px;
+    background:rgba(196,181,232,0.1); border-radius:0 10px 10px 0;
+    margin:14px 0; font-family:'Shippori Mincho',serif;
+    font-size:15px; color:#7a6ab8; line-height:1.8;
+  }
+
+  /* 学習アドバイスボックス */
+  .advice-box { border-radius:16px; padding:20px; margin-bottom:20px; border:1.5px solid; }
+  .advice-box.memory-type { background:var(--lavender-light); border-color:rgba(196,181,232,0.5); }
+  .advice-box.understand-type { background:var(--mint-light); border-color:rgba(168,213,194,0.5); }
+  .advice-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .advice-badge { font-size:10px; font-weight:700; letter-spacing:1px; padding:3px 10px; border-radius:20px; text-transform:uppercase; }
+  .memory-type .advice-badge { background:rgba(196,181,232,0.4); color:#7a6ab8; }
+  .understand-type .advice-badge { background:rgba(168,213,194,0.4); color:var(--mint-deep); }
+  .advice-header-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .keyword-item {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(196,181,232,0.2); border:1px solid rgba(196,181,232,0.4);
+    border-radius:10px; padding:7px 12px;
+  }
+  .keyword-num { font-size:11px; color:#7a6ab8; font-weight:700; }
+  .keyword-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-note { font-size:11px; color:var(--text-light); margin-top:2px; }
+  .advice-text { font-size:13px; line-height:1.9; color:var(--text); }
+  .advice-text strong { color:var(--mint-deep); }
+
+  /* 結果 */
+  .result-box { text-align:center; padding:14px 0; margin-bottom:18px; }
+  .result-icon { font-size:44px; margin-bottom:8px; display:block; animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .result-title { font-family:'Shippori Mincho',serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+  .result-title.correct { color:var(--mint-deep); }
+  .result-title.wrong { color:var(--pink-deep); }
+  .result-message { font-size:13px; color:var(--text-light); line-height:1.7; }
+
+  /* 完了画面 */
+  .complete-box { text-align:center; padding:16px 0; }
+  .complete-icon { font-size:56px; margin-bottom:14px; display:block; animation:popIn 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .complete-title { font-family:'Shippori Mincho',serif; font-size:24px; font-weight:700; color:var(--pink-deep); margin-bottom:18px; }
+  .score-detail { display:flex; justify-content:center; gap:24px; margin-bottom:20px; }
+  .score-item { text-align:center; }
+  .score-item-num { font-size:32px; font-weight:700; }
+  .score-item-label { font-size:11px; color:var(--text-light); margin-top:3px; }
+  .complete-message { font-size:13px; color:var(--text-mid); line-height:1.9; margin-bottom:24px; white-space:pre-line; }
+
+  /* ボタン */
+  .btn { width:100%; padding:15px; border:none; border-radius:14px; font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease; letter-spacing:0.3px; }
+  .btn-primary { background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; box-shadow:0 4px 16px rgba(244,167,185,0.4); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+  .btn-secondary { background:var(--surface); color:var(--text-mid); border:1.5px solid rgba(244,167,185,0.3); }
+  .btn-secondary:hover { border-color:var(--pink); color:var(--pink-deep); }
+  .btn-success { background:linear-gradient(135deg, var(--mint), var(--mint-deep)); color:white; box-shadow:0 4px 16px rgba(168,213,194,0.4); }
+  .btn-success:hover { transform:translateY(-2px); }
+  .btn-gold { background:linear-gradient(135deg, var(--peach), #e8904a); color:white; box-shadow:0 4px 16px rgba(247,196,160,0.4); }
+  .btn-gold:hover { transform:translateY(-2px); }
+  .btn-back {
+    width:100%; margin-top:10px; padding:11px; border-radius:12px;
+    font-size:12px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif;
+    cursor:pointer; transition:all 0.2s ease;
+    background:transparent; border:1.5px solid rgba(244,167,185,0.25); color:var(--text-light);
+  }
+  /* 深掘りリンク */
+  .deepdive-link {
+    display:block; text-align:center; margin-top:12px;
+    font-size:12px; color:var(--text-light);
+    text-decoration:none; cursor:pointer;
+    transition: color 0.2s ease;
+    background:none; border:none; width:100%;
+    font-family:'Zen Maru Gothic',sans-serif;
+    padding:6px;
+  }
+  .deepdive-link:hover { color:var(--pink-deep); }
+
+  .hint { text-align:center; font-size:12px; color:var(--text-light); margin-bottom:14px; line-height:1.6; }
+  .hidden { display:none; }
+
+  /* インタラクティブ解説 */
+  .interactive-block { margin-bottom: 18px; }
+  .interactive-step {
+    display:flex; align-items:flex-start; gap:14px;
+    padding:16px 18px; border-radius:14px; margin-bottom:10px;
+    background:var(--surface); border:1.5px solid rgba(244,167,185,0.15);
+    opacity:0.35; transition:all 0.4s ease;
+  }
+  .interactive-step.active { opacity:1; border-color:var(--pink); background:var(--pink-light); }
+  .interactive-step.done { opacity:1; border-color:var(--mint); background:var(--mint-light); }
+  .step-icon { font-size:24px; flex-shrink:0; margin-top:2px; }
+  .step-body {}
+  .step-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .step-desc { font-size:13px; color:var(--text-mid); line-height:1.7; }
+  .interactive-step.active .step-desc { color:var(--text); }
+  .btn-next-step {
+    width:100%; padding:12px; border-radius:12px; margin-top:10px;
+    font-size:13px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif;
+    cursor:pointer; transition:all 0.2s ease;
+    background:linear-gradient(135deg, var(--pink), var(--pink-deep));
+    color:white; border:none; box-shadow:0 4px 14px rgba(244,167,185,0.35);
+  }
+  .btn-next-step:hover { transform:translateY(-2px); }
+  /* 3枚カード */
+  .card-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .mini-card {
+    border-radius:14px; padding:16px 18px;
+    border:1.5px solid rgba(196,181,232,0.3);
+    background:linear-gradient(135deg, var(--lavender-light), #fff);
+  }
+  .mini-card-title { font-size:13px; font-weight:700; color:#7a6ab8; margin-bottom:6px; }
+  .mini-card-desc { font-size:13px; color:var(--text); line-height:1.7; }
+  .mini-card-example { font-size:12px; color:var(--text-light); margin-top:4px; }
+
+  @keyframes floatUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+  @media (min-width: 768px) {
+    .app { max-width: 720px; }
+    .header h1 { font-size: 27px; }
+    .question-text { font-size: 18px; line-height: 2; padding: 22px 24px; }
+    .choice { font-size: 16px; padding: 16px 20px; }
+    .choice-num { width: 30px; height: 30px; font-size: 13px; }
+    .btn { font-size: 16px; padding: 17px; }
+    .btn-branch-ok { font-size: 16px; padding: 16px; }
+    .btn-branch-more { font-size: 16px; padding: 16px; }
+    .explanation-text { font-size: 16px; }
+    .story-text { font-size: 15px; }
+    .story-lead { font-size: 18px; }
+    .advice-text { font-size: 15px; }
+    .keyword-text { font-size: 15px; }
+    .keyword-note { font-size: 13px; }
+    .result-title { font-size: 26px; }
+    .complete-title { font-size: 28px; }
+    .hint { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-badge">🌸 生成AIパスポート対策</div>
+    <div class="header-deco">
+      <div class="deco-line"></div>
+      <div class="deco-dot"></div>
+      <div class="deco-line right"></div>
+    </div>
+  </div>
+
+  <!-- STEP1 -->
+  <div class="card" id="step1">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div class="q-num-simple" id="s1-qnum" style="margin-bottom:0;"></div>
+      <div style="font-size:12px; color:var(--text-light);">まず選択肢に目を通してみよう</div>
+    </div>
+    <div class="question-text" id="s1-qtext"></div>
+    <div class="choices" id="s1-choices"></div>
+    <p class="hint">💡 答えは選ばなくてOK</p>
+    <button class="btn btn-primary" onclick="showStep2()">解説を読む →</button>
+  </div>
+
+  <!-- STEP2 -->
+  <div class="card hidden" id="step2">
+    <div class="question-text" id="s2-qtext"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">かんたん解説</div>
+      <div class="explanation-text" id="s2-simple"></div>
+    </div>
+    <div class="branch-buttons">
+      <button class="btn-branch-ok" onclick="showStep3()">理解できたので問題を解く →</button>
+      <button class="deepdive-link" onclick="showDeepDive()">🔍 もっと詳しく読む</button>
+    </div>
+  </div>
+
+  <!-- 深掘り解説 -->
+  <div class="deepdive-card hidden" id="stepDeepDive">
+    <div id="deepdive-content"></div>
+    <button class="btn btn-primary" onclick="showStep3()">問題を解く →</button>
+  </div>
+
+  <!-- STEP3 -->
+  <div class="card hidden" id="step3">
+    <div class="q-num-simple" id="s3-qnum"></div>
+    <div class="question-text" id="s3-qtext"></div>
+    <div class="choices" id="s3-choices"></div>
+    <button class="btn btn-secondary hidden" id="answerBtn" onclick="showResult()">答え合わせをする →</button>
+    <button class="btn-back" onclick="showStep2()">← 解説をもう一度確認する</button>
+  </div>
+
+  <!-- STEP4 -->
+  <div class="card hidden" id="step4">
+    <div class="result-box" id="resultBox"></div>
+    <div class="choices" id="s4-choices"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">ポイント</div>
+      <div class="explanation-text" id="s4-summary"></div>
+    </div>
+    <button class="btn btn-success" id="nextBtn" onclick="nextQuestion()">次の問題へ進む →</button>
+  </div>
+
+  <!-- 完了画面 -->
+  <div class="card hidden" id="stepComplete">
+    <div class="complete-box">
+      <span class="complete-icon">🌸</span>
+      <div class="complete-title">第1章 完了！</div>
+      <div class="score-detail">
+        <div class="score-item"><div class="score-item-num" id="correctCount" style="color:var(--mint-deep)">0</div><div class="score-item-label">正解</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text-light)">／</div><div class="score-item-label">　</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text)">5</div><div class="score-item-label">問</div></div>
+        <div class="score-item"><div class="score-item-num" id="wrongCount" style="color:var(--pink-deep)">0</div><div class="score-item-label">不正解</div></div>
+      </div>
+      <div class="complete-message" id="completeMessage"></div>
+      <button class="btn btn-gold" onclick="restartQuiz()">もう一度チャレンジする 🌸</button>
+    </div>
+  </div>
+
+</div>
+<script>
+const questions = [
+  {
+    chapter: '第2章 生成AI',
+    question: 'ChatGPTなどの生成AIが、事実と異なる情報をもっともらしく生成してしまう現象として、最も適切なものを選べ。',
+    choices: ['ディープフェイク','ハルシネーション','オーバーフィッティング','バイアス'],
+    correct: 1,
+    simple: `生成AIは「もっともらしい文章を作る」のが得意なため、<strong>間違った情報でも自信満々に答えてしまう</strong>ことがあります。これを<strong>ハルシネーション（幻覚）</strong>と呼びます。どんなに自信ありげな回答でも、重要な場面では必ず確認する習慣が大切です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">AIが「弁護士の信頼」を壊した日。</div><div class="story-text">2023年、アメリカの弁護士がChatGPTを使って判例を調べ、裁判所に提出する書類を作成しました。<br><br>ところが後から判明したのは、ChatGPTが引用した判例が<strong>すべて存在しない架空のもの</strong>だったということ。AIは自信満々に、もっともらしい判例名・裁判所名・日付まで作り上げていたのです。<br><br>弁護士はAIを信頼しすぎたために、裁判所から厳しく叱責されました。<br><br>生成AIは「正しい情報を答える」のではなく、「<em>もっともらしい文章を生成する</em>」仕組みです。専門家でさえ騙されるこの現象を、<strong>ハルシネーション（幻覚）</strong>と呼びます。</div></div>`,
+    deepdive_hint: 'ハルシネーション、イメージできましたか？',
+    summary: `ハルシネーションは試験頻出ワードです。名称と意味をセットで覚えておきましょう。`
+  },
+  {
+    chapter: '第1章 機械学習',
+    question: '機械学習の手法に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '教師あり学習とは、正解のないデータをもとに、AIが自らパターンを見つけ出す手法である。',
+      '強化学習とは、大量の正解データを与えて、AIに正解を記憶させる手法である。',
+      '教師なし学習とは、AIが試行錯誤をくり返し、報酬が最大になるよう学習する手法である。',
+      '教師あり学習とは、正解データをもとに、AIが予測モデルを学習する手法である。'
+    ],
+    correct: 3,
+    simple: `機械学習には大きく3つの手法があります。<strong>教師あり学習</strong>は正解データで学ぶ、<strong>教師なし学習</strong>は正解なしで自分でパターンを見つける、<strong>強化学習</strong>は試行錯誤しながら自律的に学ぶ方法です。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① 教師あり学習</div><div class="mini-card-desc">正解データをもとにAIが予測モデルを学習する手法。あらかじめ「正解」を教えることで、新しいデータにも応用できる判断力を身につける。</div><div class="mini-card-example">例：「これは迷惑メール／普通のメール」と正解付きデータを大量に見せて学ばせる</div></div><div class="mini-card"><div class="mini-card-title">② 教師なし学習</div><div class="mini-card-desc">正解のないデータから、AIが自らパターンやグループを見つけ出す手法。人間が気づかない隠れた傾向や構造を発見できる。</div><div class="mini-card-example">例：購買データから「似た好みを持つお客さん」を自動でグループ分けする</div></div><div class="mini-card"><div class="mini-card-title">③ 強化学習</div><div class="mini-card-desc">試行錯誤をくり返しながら、より良い結果（報酬）が得られる行動を学習する手法。正解データを必要とせず、結果のフィードバックから自律的に学ぶのが特徴。</div><div class="mini-card-example">例：自動運転AIが走行データを積み重ねて、より安全な運転を学んでいく</div></div></div>`,
+    deepdive_hint: '3つの違い、整理できましたか？',
+    summary: `3つの手法の「すり替え」は本番でも定番のひっかけパターンです。違いを整理しておくと、本番で力を発揮できます。`
+  },
+  {
+    chapter: '第3章 生成AIの動向',
+    question: 'RAG（検索拡張生成）の活用事例として、最も適切なものを選べ。',
+    choices: [
+      '大量の過去メールを学習させることで、AIが社員の文章スタイルを習得し、自動返信できるようにした。',
+      '社内の最新マニュアルや規約をデータベースに登録し、AIが常にその情報をもとに社員の質問に回答できるようにした。',
+      'AIに毎日ニュース記事を読ませることで、最新トレンドを自動的に学習し、知識を更新し続けるようにした。',
+      '複数のAIモデルを並列で動かし、それぞれの回答を比較して最も精度の高いものを選ぶようにした。'
+    ],
+    correct: 1,
+    simple: `RAG（検索拡張生成）とは、AIが回答する前に<strong>登録された知識ベース</strong>を検索し、その情報をもとに答える技術です。AIが学習していない社内マニュアルや規約なども、知識ベースに登録すれば参照できるようになります。`,
+    deepdive: `<div style="margin-bottom:18px;">
+<svg viewBox="0 0 320 235" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:360px;display:block;margin:0 auto;">
+  <defs>
+    <style>
+      .rl { font-family:'Zen Maru Gothic',sans-serif; font-size:12px; fill:#3d3335; text-anchor:middle; font-weight:700; }
+      .rs { font-family:'Zen Maru Gothic',sans-serif; font-size:9px; fill:#b09a9d; text-anchor:middle; }
+      .rb { font-family:'Shippori Mincho',serif; font-size:11px; fill:#3d3335; text-anchor:middle; }
+      .g0 { opacity:0; animation: fu 0.5s ease 0.1s forwards; }
+      .g1 { opacity:0; animation: fu 0.5s ease 0.4s forwards; }
+      .g2 { opacity:0; animation: fu 0.5s ease 1.0s forwards; }
+      .g3 { opacity:0; animation: fu 0.5s ease 1.6s forwards; }
+      .a1 { opacity:0; animation: fu 0.3s ease 0.8s forwards; }
+      .a2 { opacity:0; animation: fu 0.3s ease 1.4s forwards; }
+      .a3 { opacity:0; animation: fu 0.3s ease 2.0s forwards; }
+      .a4 { opacity:0; animation: fu 0.3s ease 2.4s forwards; }
+      .g4 { opacity:0; animation: fu 0.5s ease 2.7s forwards; }
+      @keyframes fu { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+    </style>
+  </defs>
+
+  <!-- ピンク吹き出し（ユーザー真上・出っ張りは吹き出し底部中央からユーザーへ） -->
+  <g class="g0">
+    <rect x="4" y="18" width="92" height="36" rx="8" fill="#fde8ee" stroke="#f4a7b9" stroke-width="1.5"/>
+    <polygon points="40,54 58,54 49,62" fill="#fde8ee" stroke="#f4a7b9" stroke-width="1.5"/>
+    <line x1="41" y1="53" x2="57" y2="53" stroke="#fde8ee" stroke-width="3"/>
+    <text x="50" y="34" class="rb">「育休の申請</text>
+    <text x="50" y="48" class="rb">方法は？」</text>
+  </g>
+
+  <!-- ユーザー -->
+  <g class="g1">
+    <circle cx="50" cy="106" r="32" fill="#fde8ee" stroke="#f4a7b9" stroke-width="1.5"/>
+    <text x="50" y="102" text-anchor="middle" font-size="24">👤</text>
+    <text x="50" y="116" class="rl">ユーザー</text>
+  </g>
+
+  <!-- 生成AI -->
+  <g class="g2">
+    <circle cx="160" cy="106" r="32" fill="#ede8f8" stroke="#c4b5e8" stroke-width="1.5"/>
+    <text x="160" y="102" text-anchor="middle" font-size="24">🤖</text>
+    <text x="160" y="116" class="rl">生成AI</text>
+  </g>
+
+  <!-- 知識ベース -->
+  <g class="g3">
+    <circle cx="270" cy="106" r="32" fill="#e6f5ef" stroke="#a8d5c2" stroke-width="1.5"/>
+    <text x="270" y="97" text-anchor="middle" font-size="24">📚</text>
+    <text x="270" y="113" class="rl">知識ベース</text>
+    <text x="270" y="125" class="rs">社内文書・規約など</text>
+  </g>
+
+  <!-- 上段矢印：ユーザー→AI（質問） -->
+  <g class="a1">
+    <line x1="84" y1="93" x2="124" y2="93" stroke="#f4a7b9" stroke-width="1.5" stroke-dasharray="4,2"/>
+    <polygon points="124,88 134,93 124,98" fill="#f4a7b9"/>
+    <text x="109" y="86" class="rs">質問</text>
+  </g>
+
+  <!-- 上段矢印：AI→知識ベース（検索） -->
+  <g class="a2">
+    <line x1="194" y1="93" x2="234" y2="93" stroke="#c4b5e8" stroke-width="1.5" stroke-dasharray="4,2"/>
+    <polygon points="234,88 244,93 234,98" fill="#c4b5e8"/>
+    <text x="219" y="86" class="rs">検索</text>
+  </g>
+
+  <!-- 下段矢印：知識ベース→AI（参照） -->
+  <g class="a3">
+    <line x1="234" y1="119" x2="194" y2="119" stroke="#a8d5c2" stroke-width="1.5" stroke-dasharray="4,2"/>
+    <polygon points="194,114 184,119 194,124" fill="#a8d5c2"/>
+    <text x="219" y="132" class="rs">参照</text>
+  </g>
+
+  <!-- 下段矢印：AI→ユーザー（回答） -->
+  <g class="a4">
+    <line x1="124" y1="119" x2="84" y2="119" stroke="#c4b5e8" stroke-width="1.5" stroke-dasharray="4,2"/>
+    <polygon points="84,114 74,119 84,124" fill="#c4b5e8"/>
+    <text x="109" y="132" class="rs" style="fill:#c4b5e8;">回答</text>
+  </g>
+
+  <!-- パープル吹き出し（出っ張りは吹き出し上部中央からAIへ） -->
+  <g class="g4">
+    <polygon points="148,162 172,162 160,152" fill="#ede8f8" stroke="#c4b5e8" stroke-width="1.5"/>
+    <line x1="149" y1="162" x2="171" y2="162" stroke="#ede8f8" stroke-width="3"/>
+    <rect x="56" y="162" width="208" height="42" rx="10" fill="#ede8f8" stroke="#c4b5e8" stroke-width="1.5"/>
+    <text x="160" y="180" class="rb">「社内規約によると、育休の</text>
+    <text x="160" y="195" class="rb">申請は〇〇部門へ…」</text>
+  </g>
+</svg>
+</div>
+<div class="advice-box understand-type"><div class="advice-header"><span class="advice-header-text" style="font-weight:700;font-size:14px;">RAGのポイント</span></div><div class="advice-text">AIが「知らないこと」でも、<strong>知識ベースに登録されていれば答えられます。</strong><br><br>社内マニュアル・規約・過去の議事録など、AIが学習していない情報も活用できます。<br><br>さらに、知識ベースの情報をもとに回答するため、<strong>ハルシネーション（でたらめな回答）が起きにくくなる</strong>のも大きな特徴です。<br><br>このRAGの2つの特徴が、実務で広く使われている理由です。</div></div>`,
+        deepdive_hint: 'RAGの流れ、イメージできましたか？',
+    summary: `RAGは実務でも注目の技術。「なぜ使うか」をイメージできると、本番問題に強くなります。`
+  }
+];
+
+let currentQ=0, selectedIdx=null, correctCount=0, wrongCount=0;
+
+function init() {
+  currentQ=0; selectedIdx=null; correctCount=0; wrongCount=0;
+  loadQuestion(0); showScreen('step1'); updateStepIndicator(1); updateProgress();
+}
+
+function loadQuestion(idx) {
+  const q=questions[idx], total=questions.length;
+  const qnum = `問題 ${idx+1}`;
+  document.getElementById('s1-qnum').textContent=qnum;
+  document.getElementById('s1-qtext').textContent=q.question;
+  renderChoices('s1-choices',q.choices,false);
+  document.getElementById('s2-qtext').textContent=q.question;
+  document.getElementById('s2-simple').innerHTML=q.simple;
+  document.getElementById('deepdive-content').innerHTML=q.deepdive;
+  document.getElementById('s3-qnum').textContent=qnum;
+  document.getElementById('s3-qtext').textContent=q.question;
+  renderChoices('s3-choices',q.choices,true);
+  selectedIdx=null;
+  document.getElementById('answerBtn').classList.add('hidden');
+  ragStep=1;
+}
+
+function renderChoices(cid,choices,clickable) {
+  const c=document.getElementById(cid); c.innerHTML='';
+  choices.forEach((text,i)=>{
+    const d=document.createElement('div');
+    d.className='choice'+(clickable?' clickable':'');
+    d.id=cid+'-c'+i;
+    if(clickable) d.onclick=()=>selectChoice(i);
+    d.innerHTML=`<div class="choice-num">${i+1}</div><span>${text}</span>`;
+    c.appendChild(d);
+  });
+}
+
+const allScreens=['step1','step2','stepDeepDive','step3','step4','stepComplete'];
+function showScreen(id) {
+  allScreens.forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showStep2() { showScreen('step2'); }
+function showDeepDive() { showScreen('stepDeepDive'); }
+function showStep3() {
+  showScreen('step3');
+  selectedIdx=null;
+  document.querySelectorAll('#s3-choices .choice').forEach(c=>c.className='choice clickable');
+  document.getElementById('answerBtn').classList.add('hidden');
+}
+
+function updateStepIndicator(cur) {}
+
+function updateProgress() {}
+
+function selectChoice(idx) {
+  selectedIdx=idx;
+  document.querySelectorAll('#s3-choices .choice').forEach(c=>c.className='choice clickable');
+  document.querySelectorAll('#s3-choices .choice')[idx].classList.add('selected');
+  document.getElementById('answerBtn').classList.remove('hidden');
+}
+
+function showResult() {
+  const q=questions[currentQ], isCorrect=selectedIdx===q.correct;
+  if(isCorrect) correctCount++; else wrongCount++;
+  document.getElementById('resultBox').innerHTML=isCorrect
+    ?`<span class="result-icon">🌸</span><div class="result-title correct">正解！</div>`
+    :`<span class="result-icon">💭</span><div class="result-title wrong">惜しい！</div>`;
+  const s4=document.getElementById('s4-choices'); s4.innerHTML='';
+  q.choices.forEach((text,i)=>{
+    const d=document.createElement('div');
+    if(i===q.correct){d.className='choice correct';d.innerHTML=`<div class="choice-num">${i+1}</div><span>${text} ✓</span>`;}
+    else if(i===selectedIdx&&!isCorrect){d.className='choice wrong';d.innerHTML=`<div class="choice-num">${i+1}</div><span>${text} ✗</span>`;}
+    else{d.className='choice';d.innerHTML=`<div class="choice-num">${i+1}</div><span>${text}</span>`;}
+    s4.appendChild(d);
+  });
+  document.getElementById('s4-summary').innerHTML=q.summary;
+  const nb=document.getElementById('nextBtn');
+  if(currentQ===questions.length-1){nb.textContent='結果を見る 🌸';nb.className='btn btn-gold';}
+  else{nb.textContent='次の問題へ進む →';nb.className='btn btn-success';}
+  showScreen('step4');
+}
+
+function nextQuestion() {
+  if(currentQ===questions.length-1){showComplete();return;}
+  currentQ++; loadQuestion(currentQ); showScreen('step1');
+}
+
+function showComplete() {
+  document.getElementById('correctCount').textContent=correctCount;
+  document.getElementById('wrongCount').textContent=wrongCount;
+  const pct=correctCount/questions.length;
+  let msg=pct===1?'やった！全問正解です！🌸\nこの調子で有料版にもチャレンジしてみましょう！'
+    :pct>=0.6?'すごい！よくできました！✨\n解説を読んでもう一度チャレンジすると、さらに定着します。'
+    :'お疲れさまでした！🌸\n深掘り解説をじっくり読んでから、もう一度チャレンジしてみましょう。';
+  document.getElementById('completeMessage').textContent=msg;
+  showScreen('stepComplete');
+}
+
+let ragStep=1;
+function ragNextStep() {
+  if(ragStep>=3){
+    document.getElementById('rag-next-btn').textContent='理解できました！';
+    document.getElementById('rag-next-btn').disabled=true;
+    document.getElementById('rag-next-btn').style.opacity='0.5';
+    return;
+  }
+  document.getElementById('rag-step-'+ragStep).classList.remove('active');
+  document.getElementById('rag-step-'+ragStep).classList.add('done');
+  ragStep++;
+  document.getElementById('rag-step-'+ragStep).classList.add('active');
+  if(ragStep===3) document.getElementById('rag-next-btn').textContent='完了！';
+}
+
+function restartQuiz(){init();}
+
+function init() {
+  currentQ=0; selectedIdx=null; correctCount=0; wrongCount=0;
+  loadQuestion(0); showScreen('step1');
+}
+
+init();
+</script>
+</body>
+</html>
