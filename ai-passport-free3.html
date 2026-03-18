@@ -263,11 +263,13 @@
   .btn-gold { background:linear-gradient(135deg, var(--peach), #e8904a); color:white; box-shadow:0 4px 16px rgba(247,196,160,0.4); }
   .btn-gold:hover { transform:translateY(-2px); }
   .btn-back {
-    width:100%; margin-top:10px; padding:11px; border-radius:12px;
-    font-size:12px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif;
+    display:inline-block; margin-top:14px; padding:6px 10px; border-radius:8px;
+    font-size:11px; font-weight:500; font-family:'Zen Maru Gothic',sans-serif;
     cursor:pointer; transition:all 0.2s ease;
-    background:transparent; border:1.5px solid rgba(244,167,185,0.25); color:var(--text-light);
+    background:transparent; border:none; color:var(--text-light);
+    text-align:left;
   }
+  .btn-back:hover { color:var(--text-mid); }
   /* 深掘りリンク */
   .deepdive-link {
     display:block; text-align:center; margin-top:12px;
@@ -317,6 +319,23 @@
   .mini-card-desc { font-size:13px; color:var(--text); line-height:1.7; }
   .mini-card-example { font-size:12px; color:var(--text-light); margin-top:4px; }
 
+  /* チュートリアル */
+  .tutorial-hint {
+    background: linear-gradient(135deg, var(--mint-light), #f0f9f6);
+    border: 1.5px solid rgba(168,213,194,0.5);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;
+    font-size: 13px; color: var(--mint-deep); line-height: 1.7;
+    display: none;
+  }
+  .tutorial-hint.show { display: block; animation: floatUp 0.4s ease; }
+  .tutorial-hint-step { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--mint-deep); margin-bottom:4px; text-transform:uppercase; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 4px 16px rgba(244,167,185,0.4); }
+    50% { box-shadow: 0 4px 28px rgba(244,167,185,0.9), 0 0 0 6px rgba(244,167,185,0.2); }
+  }
+  .btn-pulse { animation: pulse 1.5s ease-in-out infinite; }
+
   @keyframes floatUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
   @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
 
@@ -344,49 +363,103 @@
 <body>
 <div class="app">
 
-  <div class="header">
-    <div class="header-badge">🌸 生成AIパスポート対策</div>
-    <div class="header-deco">
-      <div class="deco-line"></div>
-      <div class="deco-dot"></div>
-      <div class="deco-line right"></div>
+  <!-- トップ画面 -->
+  <div class="card" id="stepTop">
+    <div class="header">
+      <div class="header-badge">🌸 生成AIパスポート対策</div>
+      <div class="header-deco">
+        <div class="deco-line"></div>
+        <div class="deco-dot"></div>
+        <div class="deco-line right"></div>
+      </div>
+    </div>
+    <div style="text-align:center; padding:16px 0 24px;">
+      <div style="font-family:'Shippori Mincho',serif; font-size:22px; font-weight:700; color:var(--text); margin-bottom:8px;">生成AIパスポート試験対策</div>
+    </div>
+    <button class="btn btn-primary" onclick="startTutorial()">操作方法を確認 →</button>
+    <button class="btn-back" style="display:block; text-align:center; width:100%; margin-top:10px;" onclick="startQuiz()">スキップして問題へ</button>
+  </div>
+
+  <!-- チュートリアル導入画面 -->
+  <div class="card hidden" id="stepTutorialIntro">
+    <div class="step-tag">📖 チュートリアル</div>
+    <div style="font-family:'Shippori Mincho',serif; font-size:18px; font-weight:700; color:var(--text); margin-bottom:16px; line-height:1.7;">実際に操作してみましょう</div>
+    <div class="simple-explanation">
+      <div class="explanation-text">このアプリは1問ごとに<strong>4つのステップ</strong>で学びます。<br><br>
+      ① 選択肢に目を通す<br>
+      ② 解説を読む<br>
+      ③ 問題を解く<br>
+      ④ 答え合わせ<br><br>
+      1問を通して操作を体験してみましょう！</div>
+    </div>
+    <button class="btn btn-primary" onclick="startTutorialQuestion()">体験してみる →</button>
+    <button class="btn-back" onclick="showScreen('stepTop')">← トップに戻る</button>
+  </div>
+
+  <!-- チュートリアル完了画面 -->
+  <div class="card hidden" id="stepTutorialEnd">
+    <div class="complete-box">
+      <span class="complete-icon">✨</span>
+      <div class="complete-title" style="color:var(--mint-deep);">操作確認 完了！</div>
+      <button class="btn btn-primary" onclick="startQuiz()">問題に挑戦する →</button>
+      <button class="btn-back" onclick="showScreen('stepTop')" style="display:block; text-align:center; width:100%; margin-top:10px;">← トップに戻る</button>
     </div>
   </div>
 
   <!-- STEP1 -->
-  <div class="card" id="step1">
+  <div class="card hidden" id="step1">
+    <div class="tutorial-hint" id="tutorial-hint-1">
+      <div class="tutorial-hint-step">Step 1 / 4</div>
+      まず選択肢に目を通してみましょう。答えは選ばなくてOKです。読んだら「解説を読む」を押してください。
+    </div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
       <div class="q-num-simple" id="s1-qnum" style="margin-bottom:0;"></div>
-      <div style="font-size:12px; color:var(--text-light);">まず選択肢に目を通してみよう</div>
+      <div style="font-size:12px; color:var(--text-light);" id="s1-progress"></div>
     </div>
     <div class="question-text" id="s1-qtext"></div>
     <div class="choices" id="s1-choices"></div>
     <p class="hint">💡 答えは選ばなくてOK</p>
-    <button class="btn btn-primary" onclick="showStep2()">解説を読む →</button>
+    <button class="btn btn-primary" id="btn-step1-next" onclick="showStep2()">解説を読む →</button>
+    <button class="btn-back" onclick="showScreen('stepTop')">← トップに戻る</button>
   </div>
 
   <!-- STEP2 -->
   <div class="card hidden" id="step2">
+    <div class="tutorial-hint" id="tutorial-hint-2">
+      <div class="tutorial-hint-step">Step 2 / 4</div>
+      解説を読んで理解を深めましょう。もっと詳しく読むこともできます。理解できたら「問題を解く」を押してください。
+    </div>
+    <div style="text-align:right; font-size:12px; color:var(--text-light); margin-bottom:10px;" id="s2-progress"></div>
     <div class="question-text" id="s2-qtext"></div>
     <div class="simple-explanation">
       <div class="explanation-title">かんたん解説</div>
       <div class="explanation-text" id="s2-simple"></div>
     </div>
     <div class="branch-buttons">
-      <button class="btn-branch-ok" onclick="showStep3()">理解できたので問題を解く →</button>
+      <button class="btn-branch-ok" id="btn-step2-next" onclick="showStep3()">理解できたので問題を解く →</button>
       <button class="deepdive-link" onclick="showDeepDive()">🔍 もっと詳しく読む</button>
     </div>
+    <button class="btn-back" onclick="showScreen('step1')">← 問題に戻る</button>
   </div>
 
   <!-- 深掘り解説 -->
   <div class="deepdive-card hidden" id="stepDeepDive">
+    <div style="text-align:right; font-size:12px; color:var(--text-light); margin-bottom:10px;" id="sdeepdive-progress"></div>
     <div id="deepdive-content"></div>
     <button class="btn btn-primary" onclick="showStep3()">問題を解く →</button>
+    <button class="btn-back" onclick="showScreen('step2')">← かんたん解説に戻る</button>
   </div>
 
   <!-- STEP3 -->
   <div class="card hidden" id="step3">
-    <div class="q-num-simple" id="s3-qnum"></div>
+    <div class="tutorial-hint" id="tutorial-hint-3">
+      <div class="tutorial-hint-step">Step 3 / 4</div>
+      では実際に答えを選んでみましょう。選ぶと「答え合わせをする」ボタンが現れます。
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div class="q-num-simple" id="s3-qnum" style="margin-bottom:0;"></div>
+      <div style="font-size:12px; color:var(--text-light);" id="s3-progress"></div>
+    </div>
     <div class="question-text" id="s3-qtext"></div>
     <div class="choices" id="s3-choices"></div>
     <button class="btn btn-secondary hidden" id="answerBtn" onclick="showResult()">答え合わせをする →</button>
@@ -395,6 +468,11 @@
 
   <!-- STEP4 -->
   <div class="card hidden" id="step4">
+    <div class="tutorial-hint" id="tutorial-hint-4">
+      <div class="tutorial-hint-step">Step 4 / 4</div>
+      答え合わせです。ポイントを確認して次へ進みましょう。
+    </div>
+    <div style="text-align:right; font-size:12px; color:var(--text-light); margin-bottom:10px;" id="s4-progress"></div>
     <div class="result-box" id="resultBox"></div>
     <div class="choices" id="s4-choices"></div>
     <div class="simple-explanation">
@@ -412,7 +490,7 @@
       <div class="score-detail">
         <div class="score-item"><div class="score-item-num" id="correctCount" style="color:var(--mint-deep)">0</div><div class="score-item-label">正解</div></div>
         <div class="score-item"><div class="score-item-num" style="color:var(--text-light)">／</div><div class="score-item-label">　</div></div>
-        <div class="score-item"><div class="score-item-num" style="color:var(--text)">5</div><div class="score-item-label">問</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text)">3</div><div class="score-item-label">問</div></div>
         <div class="score-item"><div class="score-item-num" id="wrongCount" style="color:var(--pink-deep)">0</div><div class="score-item-label">不正解</div></div>
       </div>
       <div class="complete-message" id="completeMessage"></div>
@@ -561,10 +639,20 @@ function init() {
   loadQuestion(0); showScreen('step1'); updateStepIndicator(1); updateProgress();
 }
 
+function startQuiz() {
+  currentQ=0; selectedIdx=null; correctCount=0; wrongCount=0;
+  loadQuestion(0); showScreen('step1');
+}
+
 function loadQuestion(idx) {
   const q=questions[idx], total=questions.length;
   const qnum = `問題 ${idx+1}`;
   document.getElementById('s1-qnum').textContent=qnum;
+  document.getElementById('s1-progress').textContent=`${total}問中${idx+1}問目`;
+  document.getElementById('s2-progress').textContent=`${total}問中${idx+1}問目`;
+  document.getElementById('sdeepdive-progress').textContent=`${total}問中${idx+1}問目`;
+  document.getElementById('s3-progress').textContent=`${total}問中${idx+1}問目`;
+  document.getElementById('s4-progress').textContent=`${total}問中${idx+1}問目`;
   document.getElementById('s1-qtext').textContent=q.question;
   renderChoices('s1-choices',q.choices,false);
   document.getElementById('s2-qtext').textContent=q.question;
@@ -590,20 +678,79 @@ function renderChoices(cid,choices,clickable) {
   });
 }
 
-const allScreens=['step1','step2','stepDeepDive','step3','step4','stepComplete'];
+const allScreens=['stepTop','stepTutorialIntro','stepTutorialEnd','step1','step2','stepDeepDive','step3','step4','stepComplete'];
 function showScreen(id) {
   allScreens.forEach(s=>document.getElementById(s).classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function showStep2() { showScreen('step2'); }
+const tutorialQuestion = {
+  chapter: 'チュートリアル',
+  question: '1956年に開催され、「人工知能（AI）」という言葉が初めて使われたとされる会議の名称として、最も適切なものを選べ。',
+  choices: ['チューリング会議','ダートマス会議','シリコンバレー会議','MIT人工知能サミット'],
+  correct: 1,
+  simple: `「AI（人工知能）」という言葉は、<strong>1956年にアメリカで開かれた「ダートマス会議」</strong>で初めて使われました。提唱したのは<strong>ジョン・マッカーシー</strong>という研究者で、この会議がAI研究という分野の出発点とされています。`,
+  deepdive: `<div class="story-block"><div class="story-lead">1956年の夏、山の中に研究者たちが集まった。</div><div class="story-text">舞台はアメリカ・ニューハンプシャー州にある<strong>ダートマス大学</strong>。当時28歳の若き研究者<strong>ジョン・マッカーシー</strong>を中心に、研究者たちが議論を続けました。<br><br>この会議で初めて<strong>「Artificial Intelligence（人工知能）」</strong>という言葉が公式に使われ、AI研究という分野が誕生しました。</div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">セットで覚えよう</span></div><div class="keyword-list"><div class="keyword-item"><span class="keyword-num">①</span><div><div class="keyword-text">1956年・ダートマス会議</div><div class="keyword-note">AIという言葉が生まれた</div></div></div><div class="keyword-item"><span class="keyword-num">②</span><div><div class="keyword-text">ジョン・マッカーシー</div><div class="keyword-note">提唱した研究者</div></div></div></div></div>`,
+  summary: `ダートマス会議は有料版でも登場するキーワードです。1956年・ジョン・マッカーシーとセットで覚えておきましょう。`
+};
+
+let isTutorial = false;
+
+function startTutorial() { showScreen('stepTutorialIntro'); }
+
+function applyTutorialHint(stepNum) {
+  ['tutorial-hint-1','tutorial-hint-2','tutorial-hint-3','tutorial-hint-4'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('show');
+  });
+  const hint = document.getElementById('tutorial-hint-' + stepNum);
+  if(hint) hint.classList.add('show');
+  // ボタン光らせをリセット
+  document.querySelectorAll('.btn-pulse').forEach(el => el.classList.remove('btn-pulse'));
+}
+
+function startTutorialQuestion() {
+  isTutorial = true;
+  const q = tutorialQuestion;
+  document.getElementById('s1-qnum').textContent = 'チュートリアル';
+  document.getElementById('s1-progress').textContent = '';
+  document.getElementById('s1-qtext').textContent = q.question;
+  renderChoices('s1-choices', q.choices, false);
+  document.getElementById('s2-qtext').textContent = q.question;
+  document.getElementById('s2-simple').innerHTML = q.simple;
+  document.getElementById('deepdive-content').innerHTML = q.deepdive;
+  document.getElementById('s3-qnum').textContent = 'チュートリアル';
+  document.getElementById('s3-qtext').textContent = q.question;
+  document.getElementById('s3-progress').textContent = '';
+  document.getElementById('s2-progress').textContent = '';
+  document.getElementById('sdeepdive-progress').textContent = '';
+  document.getElementById('s4-progress').textContent = '';
+  renderChoices('s3-choices', q.choices, true);
+  selectedIdx = null;
+  document.getElementById('answerBtn').classList.add('hidden');
+  ragStep = 1;
+  showScreen('step1');
+  if(isTutorial) {
+    applyTutorialHint(1);
+    document.getElementById('btn-step1-next').classList.add('btn-pulse');
+  }
+}
+
+function showStep2() {
+  showScreen('step2');
+  if(isTutorial) {
+    applyTutorialHint(2);
+    document.getElementById('btn-step2-next').classList.add('btn-pulse');
+  }
+}
 function showDeepDive() { showScreen('stepDeepDive'); }
 function showStep3() {
   showScreen('step3');
   selectedIdx=null;
   document.querySelectorAll('#s3-choices .choice').forEach(c=>c.className='choice clickable');
   document.getElementById('answerBtn').classList.add('hidden');
+  if(isTutorial) applyTutorialHint(3);
 }
 
 function updateStepIndicator(cur) {}
@@ -615,6 +762,7 @@ function selectChoice(idx) {
   document.querySelectorAll('#s3-choices .choice').forEach(c=>c.className='choice clickable');
   document.querySelectorAll('#s3-choices .choice')[idx].classList.add('selected');
   document.getElementById('answerBtn').classList.remove('hidden');
+  if(isTutorial) document.getElementById('answerBtn').classList.add('btn-pulse');
 }
 
 function showResult() {
@@ -633,12 +781,22 @@ function showResult() {
   });
   document.getElementById('s4-summary').innerHTML=q.summary;
   const nb=document.getElementById('nextBtn');
-  if(currentQ===questions.length-1){nb.textContent='結果を見る 🌸';nb.className='btn btn-gold';}
+  if(isTutorial){ nb.textContent='次の問題へ進む →'; nb.className='btn btn-success'; }
+  else if(currentQ===questions.length-1){nb.textContent='結果を見る 🌸';nb.className='btn btn-gold';}
   else{nb.textContent='次の問題へ進む →';nb.className='btn btn-success';}
   showScreen('step4');
+  if(isTutorial) {
+    applyTutorialHint(4);
+    nb.classList.add('btn-pulse');
+  }
 }
 
 function nextQuestion() {
+  if(isTutorial) {
+    isTutorial = false;
+    showScreen('stepTutorialEnd');
+    return;
+  }
   if(currentQ===questions.length-1){showComplete();return;}
   currentQ++; loadQuestion(currentQ); showScreen('step1');
 }
@@ -669,11 +827,10 @@ function ragNextStep() {
   if(ragStep===3) document.getElementById('rag-next-btn').textContent='完了！';
 }
 
-function restartQuiz(){init();}
+function restartQuiz(){ showScreen('stepTop'); }
 
 function init() {
-  currentQ=0; selectedIdx=null; correctCount=0; wrongCount=0;
-  loadQuestion(0); showScreen('step1');
+  showScreen('stepTop');
 }
 
 init();
