@@ -486,13 +486,8 @@
   <div class="card hidden" id="stepComplete">
     <div class="complete-box">
       <span class="complete-icon">🌸</span>
-      <div class="complete-title">第1章 完了！</div>
-      <div class="score-detail">
-        <div class="score-item"><div class="score-item-num" id="correctCount" style="color:var(--mint-deep)">0</div><div class="score-item-label">正解</div></div>
-        <div class="score-item"><div class="score-item-num" style="color:var(--text-light)">／</div><div class="score-item-label">　</div></div>
-        <div class="score-item"><div class="score-item-num" style="color:var(--text)">3</div><div class="score-item-label">問</div></div>
-        <div class="score-item"><div class="score-item-num" id="wrongCount" style="color:var(--pink-deep)">0</div><div class="score-item-label">不正解</div></div>
-      </div>
+      <div class="complete-title">3問 完走！</div>
+
       <div class="complete-message" id="completeMessage"></div>
       <button class="btn btn-gold" onclick="restartQuiz()">もう一度チャレンジする 🌸</button>
     </div>
@@ -633,14 +628,16 @@ const questions = [
 ];
 
 let currentQ=0, selectedIdx=null, correctCount=0, wrongCount=0;
-
-function init() {
-  currentQ=0; selectedIdx=null; correctCount=0; wrongCount=0;
-  loadQuestion(0); showScreen('step1'); updateStepIndicator(1); updateProgress();
-}
+let ragStep=1;
 
 function startQuiz() {
   currentQ=0; selectedIdx=null; correctCount=0; wrongCount=0;
+  isTutorial=false;
+  ['tutorial-hint-1','tutorial-hint-2','tutorial-hint-3','tutorial-hint-4'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('show');
+  });
+  document.querySelectorAll('.btn-pulse').forEach(el => el.classList.remove('btn-pulse'));
   loadQuestion(0); showScreen('step1');
 }
 
@@ -766,8 +763,9 @@ function selectChoice(idx) {
 }
 
 function showResult() {
-  const q=questions[currentQ], isCorrect=selectedIdx===q.correct;
-  if(isCorrect) correctCount++; else wrongCount++;
+  const q=isTutorial ? tutorialQuestion : questions[currentQ];
+  const isCorrect=selectedIdx===q.correct;
+  if(!isTutorial){ if(isCorrect) correctCount++; else wrongCount++; }
   document.getElementById('resultBox').innerHTML=isCorrect
     ?`<span class="result-icon">🌸</span><div class="result-title correct">正解！</div>`
     :`<span class="result-icon">💭</span><div class="result-title wrong">惜しい！</div>`;
@@ -794,6 +792,11 @@ function showResult() {
 function nextQuestion() {
   if(isTutorial) {
     isTutorial = false;
+    ['tutorial-hint-1','tutorial-hint-2','tutorial-hint-3','tutorial-hint-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('show');
+    });
+    document.querySelectorAll('.btn-pulse').forEach(el => el.classList.remove('btn-pulse'));
     showScreen('stepTutorialEnd');
     return;
   }
@@ -802,29 +805,8 @@ function nextQuestion() {
 }
 
 function showComplete() {
-  document.getElementById('correctCount').textContent=correctCount;
-  document.getElementById('wrongCount').textContent=wrongCount;
-  const pct=correctCount/questions.length;
-  let msg=pct===1?'やった！全問正解です！🌸\nこの調子で有料版にもチャレンジしてみましょう！'
-    :pct>=0.6?'すごい！よくできました！✨\n解説を読んでもう一度チャレンジすると、さらに定着します。'
-    :'お疲れさまでした！🌸\n深掘り解説をじっくり読んでから、もう一度チャレンジしてみましょう。';
-  document.getElementById('completeMessage').textContent=msg;
+  document.getElementById('completeMessage').textContent='お疲れさまでした！🌸\n3問、最後までやり遂げました。すごい！';
   showScreen('stepComplete');
-}
-
-let ragStep=1;
-function ragNextStep() {
-  if(ragStep>=3){
-    document.getElementById('rag-next-btn').textContent='理解できました！';
-    document.getElementById('rag-next-btn').disabled=true;
-    document.getElementById('rag-next-btn').style.opacity='0.5';
-    return;
-  }
-  document.getElementById('rag-step-'+ragStep).classList.remove('active');
-  document.getElementById('rag-step-'+ragStep).classList.add('done');
-  ragStep++;
-  document.getElementById('rag-step-'+ragStep).classList.add('active');
-  if(ragStep===3) document.getElementById('rag-next-btn').textContent='完了！';
 }
 
 function restartQuiz(){ showScreen('stepTop'); }
