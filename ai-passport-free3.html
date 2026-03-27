@@ -44,6 +44,22 @@
   }
   .app { width:100%; max-width:640px; }
 
+  /* 音声読み上げボタン */
+  .tts-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--mint-light); border: 1.5px solid var(--mint);
+    color: var(--mint-deep); border-radius: 20px;
+    padding: 5px 12px 5px 8px;
+    font-size: 12px; font-family: 'Zen Maru Gothic', sans-serif;
+    cursor: pointer; transition: all 0.2s ease;
+    margin-bottom: 10px;
+  }
+  .tts-btn:hover { background: var(--mint); color: #fff; border-color: var(--mint-deep); }
+  .tts-btn:hover svg path, .tts-btn:hover svg circle { fill: #fff !important; }
+  .tts-btn.playing { background: var(--peach-light); border-color: var(--peach); color: #c07040; }
+  .tts-btn.playing:hover { background: var(--peach); color: #fff; border-color: #c07040; }
+  .tts-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
   /* ヘッダー */
   .header { text-align:center; margin-bottom:28px; animation: floatUp 0.7s ease; }
   .header-badge {
@@ -432,7 +448,17 @@
     <div style="text-align:right; font-size:12px; color:var(--text-light); margin-bottom:10px;" id="s2-progress"></div>
     <div class="question-text" id="s2-qtext"></div>
     <div class="simple-explanation">
-      <div class="explanation-title">かんたん解説</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+        <div class="explanation-title" style="margin-bottom:0;">かんたん解説</div>
+        <button class="tts-btn" id="ttsBtn" onclick="toggleTTS()">
+          <svg id="ttsIcon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20.56,2.11a1,1,0,0,0-1,.09L7.67,11H3a1,1,0,0,0-1,1v9a1,1,0,0,0,1,1H7.7l11.86,7.83a1,1,0,0,0,.55.17,1,1,0,0,0,.48-.12,1,1,0,0,0,.52-.88V3A1,1,0,0,0,20.56,2.11Z" fill="#7bbfa8"/>
+            <path d="M23.09,23a1,1,0,0,1-.58-.18,1,1,0,0,1-.23-1.4A9.35,9.35,0,0,0,24,16a9.24,9.24,0,0,0-1.87-5.52,1,1,0,0,1,1.6-1.21,11.2,11.2,0,0,1,.17,13.29A1,1,0,0,1,23.09,23Z" fill="#a8d5c2"/>
+            <path d="M27,26a1,1,0,0,1-.44-.1,1,1,0,0,1-.46-1.33,19.8,19.8,0,0,0,0-17.14,1,1,0,1,1,1.8-.86A22,22,0,0,1,30,15.76a21.89,21.89,0,0,1-2.15,9.67A1,1,0,0,1,27,26Z" fill="#a8d5c2"/>
+          </svg>
+          <span id="ttsBtnLabel">読み上げる</span>
+        </button>
+      </div>
       <div class="explanation-text" id="s2-simple"></div>
     </div>
     <div class="branch-buttons">
@@ -503,6 +529,7 @@ const questions = [
     correct: 1,
     simple: `生成AIは「もっともらしい文章を作る」のが得意なため、<strong>間違った情報でも自信満々に答えてしまう</strong>ことがあります。これを<strong>ハルシネーション（幻覚）</strong>と呼びます。どんなに自信ありげな回答でも、重要な場面では必ず確認する習慣が大切です。`,
     deepdive: `<div class="story-block"><div class="story-lead">AIが「弁護士の信頼」を壊した日。</div><div class="story-text">2023年、アメリカの弁護士がChatGPTを使って判例を調べ、裁判所に提出する書類を作成しました。<br><br>ところが後から判明したのは、ChatGPTが引用した判例が<strong>すべて存在しない架空のもの</strong>だったということ。AIは自信満々に、もっともらしい判例名・裁判所名・日付まで作り上げていたのです。<br><br>弁護士はAIを信頼しすぎたために、裁判所から厳しく叱責されました。<br><br>生成AIは「正しい情報を答える」のではなく、「<em>もっともらしい文章を生成する</em>」仕組みです。専門家でさえ騙されるこの現象を、<strong>ハルシネーション（幻覚）</strong>と呼びます。</div></div>`,
+    audioFile: 'audio/q1.mp3',
     deepdive_hint: 'ハルシネーション、イメージできましたか？',
     summary: `ハルシネーションは試験頻出ワードです。名称と意味をセットで覚えておきましょう。`
   },
@@ -518,6 +545,7 @@ const questions = [
     correct: 3,
     simple: `機械学習には大きく3つの手法があります。<strong>教師あり学習</strong>は正解データで学ぶ、<strong>教師なし学習</strong>は正解なしで自分でパターンを見つける、<strong>強化学習</strong>は試行錯誤しながら自律的に学ぶ方法です。`,
     deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① 教師あり学習</div><div class="mini-card-desc">正解データをもとにAIが予測モデルを学習する手法。あらかじめ「正解」を教えることで、新しいデータにも応用できる判断力を身につける。</div><div class="mini-card-example">例：「これは迷惑メール／普通のメール」と正解付きデータを大量に見せて学ばせる</div></div><div class="mini-card"><div class="mini-card-title">② 教師なし学習</div><div class="mini-card-desc">正解のないデータから、AIが自らパターンやグループを見つけ出す手法。人間が気づかない隠れた傾向や構造を発見できる。</div><div class="mini-card-example">例：購買データから「似た好みを持つお客さん」を自動でグループ分けする</div></div><div class="mini-card"><div class="mini-card-title">③ 強化学習</div><div class="mini-card-desc">試行錯誤をくり返しながら、より良い結果（報酬）が得られる行動を学習する手法。正解データを必要とせず、結果のフィードバックから自律的に学ぶのが特徴。</div><div class="mini-card-example">例：自動運転AIが走行データを積み重ねて、より安全な運転を学んでいく</div></div></div>`,
+    audioFile: 'audio/q2.mp3',
     deepdive_hint: '3つの違い、整理できましたか？',
     summary: `3つの手法の「すり替え」は本番でも定番のひっかけパターンです。違いを整理しておくと、本番で力を発揮できます。`
   },
@@ -622,7 +650,8 @@ const questions = [
 </svg>
 </div>
 <div class="advice-box understand-type"><div class="advice-header"><span class="advice-header-text" style="font-weight:700;font-size:14px;">RAGのポイント</span></div><div class="advice-text">AIが「知らないこと」でも、<strong>知識ベースに登録されていれば答えられます。</strong><br><br>社内マニュアル・規約・過去の議事録など、AIが学習していない情報も活用できます。<br><br>さらに、知識ベースの情報をもとに回答するため、<strong>ハルシネーション（でたらめな回答）が起きにくくなる</strong>のも大きな特徴です。<br><br>このRAGの2つの特徴が、実務で広く使われている理由です。</div></div>`,
-        deepdive_hint: 'RAGの流れ、イメージできましたか？',
+    audioFile: 'audio/q3.mp3',
+    deepdive_hint: 'RAGの流れ、イメージできましたか？',
     summary: `RAGは実務でも注目の技術。「なぜ使うか」をイメージできると、本番問題に強くなります。`
   }
 ];
@@ -661,6 +690,9 @@ function loadQuestion(idx) {
   selectedIdx=null;
   document.getElementById('answerBtn').classList.add('hidden');
   ragStep=1;
+  // 音声ボタン：audioFileがある問題のみ表示
+  const ttsBtn = document.getElementById('ttsBtn');
+  if(ttsBtn) ttsBtn.style.display = q.audioFile ? '' : 'none';
 }
 
 function renderChoices(cid,choices,clickable) {
@@ -675,8 +707,60 @@ function renderChoices(cid,choices,clickable) {
   });
 }
 
+// --- 音声再生（mp3） ---
+// mp3ファイルは generate_audio.js で生成して audio/ フォルダに配置してください
+// チュートリアルは音声なし（audioFile未定義）のためボタンは非表示
+
+const svgPlay = `<path d="M20.56,2.11a1,1,0,0,0-1,.09L7.67,11H3a1,1,0,0,0-1,1v9a1,1,0,0,0,1,1H7.7l11.86,7.83a1,1,0,0,0,.55.17,1,1,0,0,0,.48-.12,1,1,0,0,0,.52-.88V3A1,1,0,0,0,20.56,2.11Z" fill="#7bbfa8"/><path d="M23.09,23a1,1,0,0,1-.58-.18,1,1,0,0,1-.23-1.4A9.35,9.35,0,0,0,24,16a9.24,9.24,0,0,0-1.87-5.52,1,1,0,0,1,1.6-1.21,11.2,11.2,0,0,1,.17,13.29A1,1,0,0,1,23.09,23Z" fill="#a8d5c2"/><path d="M27,26a1,1,0,0,1-.44-.1,1,1,0,0,1-.46-1.33,19.8,19.8,0,0,0,0-17.14,1,1,0,1,1,1.8-.86A22,22,0,0,1,30,15.76a21.89,21.89,0,0,1-2.15,9.67A1,1,0,0,1,27,26Z" fill="#a8d5c2"/>`;
+const svgStop = `<path d="M19.64,2.11a1,1,0,0,0-1.05.09L6.75,11H2.08a1,1,0,0,0-1,1v9a1,1,0,0,0,1,1h4.7l11.86,7.83a1,1,0,0,0,.55.17,1,1,0,0,0,.48-.12,1,1,0,0,0,.52-.88V3A1,1,0,0,0,19.64,2.11Z" fill="#f4a7b9"/><path d="M28.64,19.93a1,1,0,0,1-.72-.3l-5.57-5.74a1,1,0,0,1,1.44-1.39l5.56,5.74a1,1,0,0,1,0,1.41A1,1,0,0,1,28.64,19.93Z" fill="#e8849a"/><path d="M25.92,21a5,5,0,1,1,5-5A5,5,0,0,1,25.92,21Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,25.92,13Z" fill="#e8849a"/>`;
+
+let currentAudio = null;
+
+function stopTTS() {
+  if(currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  const btn = document.getElementById('ttsBtn');
+  const icon = document.getElementById('ttsIcon');
+  const label = document.getElementById('ttsBtnLabel');
+  if(!btn) return;
+  btn.classList.remove('playing');
+  icon.innerHTML = svgPlay;
+  label.textContent = '読み上げる';
+}
+
+function toggleTTS() {
+  const btn = document.getElementById('ttsBtn');
+  const icon = document.getElementById('ttsIcon');
+  const label = document.getElementById('ttsBtnLabel');
+
+  // 再生中なら停止
+  if(currentAudio && !currentAudio.paused) {
+    stopTTS(); return;
+  }
+
+  // 現在の問題のmp3パスを取得
+  const q = isTutorial ? null : questions[currentQ];
+  const src = q && q.audioFile ? q.audioFile : null;
+  if(!src) return;
+
+  const audio = new Audio(src);
+  currentAudio = audio;
+
+  audio.onplay = () => {
+    btn.classList.add('playing');
+    icon.innerHTML = svgStop;
+    label.textContent = '停止する';
+  };
+  audio.onended = audio.onerror = () => stopTTS();
+  audio.play();
+}
+
 const allScreens=['stepTop','stepTutorialIntro','stepTutorialEnd','step1','step2','stepDeepDive','step3','step4','stepComplete'];
 function showScreen(id) {
+  if(id !== 'step2') stopTTS();
   allScreens.forEach(s=>document.getElementById(s).classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
@@ -727,6 +811,9 @@ function startTutorialQuestion() {
   selectedIdx = null;
   document.getElementById('answerBtn').classList.add('hidden');
   ragStep = 1;
+  // チュートリアルは音声なし
+  const ttsBtn = document.getElementById('ttsBtn');
+  if(ttsBtn) ttsBtn.style.display = 'none';
   showScreen('step1');
   if(isTutorial) {
     applyTutorialHint(1);
