@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<title>生成AIパスポート 第3章 現在の生成AIの動向</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf8f5;
+    --surface: #ffffff;
+    --surface2: #fef3f0;
+    --surface3: #f0f7f4;
+    --pink: #f4a7b9;
+    --pink-light: #fde8ee;
+    --pink-deep: #e8849a;
+    --mint: #a8d5c2;
+    --mint-light: #e6f5ef;
+    --mint-deep: #7bbfa8;
+    --peach: #f7c4a0;
+    --peach-light: #fef0e6;
+    --lavender: #c4b5e8;
+    --lavender-light: #ede8f8;
+    --text: #3d3335;
+    --text-mid: #7a6568;
+    --text-light: #b09a9d;
+    --border: rgba(244,167,185,0.25);
+    --shadow: 0 4px 24px rgba(244,167,185,0.15);
+    --shadow-sm: 0 2px 12px rgba(244,167,185,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; color-scheme: light; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(244,167,185,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(168,213,194,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(196,181,232,0.06) 0%, transparent 70%);
+  }
+  .app { width:100%; max-width:640px; }
+  .header { text-align:center; margin-bottom:28px; animation: floatUp 0.7s ease; }
+  .header-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
+    border: 1.5px solid rgba(244,167,185,0.4);
+    color: var(--pink-deep); font-size:11px; font-weight:700; letter-spacing:2px;
+    padding:6px 18px; border-radius:20px; margin-bottom:14px; text-transform:uppercase;
+  }
+  .header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size:23px; font-weight:700; color: var(--text); line-height:1.6;
+  }
+  .header-deco { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px; }
+  .deco-line { width:40px; height:1.5px; background:linear-gradient(90deg, transparent, var(--pink)); }
+  .deco-line.right { background:linear-gradient(90deg, var(--pink), transparent); }
+  .deco-dot { width:5px; height:5px; border-radius:50%; background:var(--pink); }
+  .progress-wrap { margin-bottom:22px; animation: floatUp 0.7s ease 0.05s both; }
+  .progress-meta { display:flex; justify-content:space-between; font-size:12px; color:var(--text-light); margin-bottom:8px; }
+  .progress-bar { height:6px; background:var(--pink-light); border-radius:10px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--pink), var(--peach)); border-radius:10px; transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--pink), var(--peach), var(--mint));
+    border-radius:24px 24px 0 0;
+  }
+  .deepdive-card {
+    background: var(--surface); border: 1.5px solid rgba(247,196,160,0.4);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: 0 4px 24px rgba(247,196,160,0.2);
+    position:relative; overflow:hidden;
+  }
+  .deepdive-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--peach), var(--lavender));
+    border-radius:24px 24px 0 0;
+  }
+  .q-num-simple { font-size:12px; color:var(--text-light); text-align:right; margin-bottom:10px; font-weight:700; letter-spacing:1px; }
+  .question-text {
+    font-family:'Shippori Mincho', serif; font-size:16px; line-height:1.9;
+    margin-bottom:22px; padding:18px 20px;
+    background: linear-gradient(135deg, var(--surface2), #fff9f7);
+    border-radius:16px; border-left:3px solid var(--pink); color: var(--text);
+  }
+  .choices { display:flex; flex-direction:column; gap:10px; margin-bottom:22px; }
+  .choice {
+    display:flex; align-items:center; gap:12px; padding:14px 18px;
+    background: var(--surface); border: 1.5px solid rgba(244,167,185,0.2);
+    border-radius:14px; font-size:14px; color:#5a4a4d;
+    font-family:'Shippori Mincho', serif; transition:all 0.2s ease; line-height:1.6;
+  }
+  .choice.clickable { cursor:pointer; }
+  .choice.clickable:hover { border-color:var(--pink); background:var(--pink-light); color:var(--text); transform:translateX(4px); box-shadow:var(--shadow-sm); }
+  .choice.selected { border-color:var(--pink-deep); background:var(--pink-light); color:var(--text); box-shadow:var(--shadow-sm); }
+  .choice.correct { border-color:var(--mint-deep); background:var(--mint-light); color:var(--text); }
+  .choice.wrong { border-color:#e8a0aa; background:#fdf0f2; color:var(--text-light); text-decoration:line-through; }
+  .choice-num {
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; transition:all 0.2s ease;
+    background:var(--pink-light); color:var(--pink-deep); border:1.5px solid rgba(244,167,185,0.4);
+  }
+  .choice.selected .choice-num { background:var(--pink-deep); color:white; border-color:var(--pink-deep); }
+  .choice.correct .choice-num { background:var(--mint-deep); color:white; border-color:var(--mint-deep); }
+  .choice.wrong .choice-num { background:#f0c4c8; color:#c47a80; border-color:#e8a0aa; }
+  .simple-explanation { background:var(--surface2); border-radius:16px; padding:22px; margin-bottom:22px; border:1px solid rgba(244,167,185,0.15); }
+  .explanation-title {
+    font-size:11px; font-weight:700; color:#c47a40; letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .explanation-title::before { content:''; width:3px; height:14px; background:var(--peach); border-radius:2px; display:inline-block; }
+  .explanation-text { font-size:14px; line-height:1.9; color:var(--text); }
+  .explanation-text strong { color:#c47a40; }
+  .related-block { margin-bottom:22px; }
+  .related-toggle {
+    display:flex; align-items:center; gap:8px; width:100%; padding:12px 16px;
+    background: linear-gradient(135deg, var(--lavender-light), #f8f5fd);
+    border: 1.5px solid rgba(196,181,232,0.35);
+    border-radius:12px; cursor:pointer; transition:all 0.2s ease;
+    font-family:'Zen Maru Gothic',sans-serif; font-size:13px; color:#7a6ab8; font-weight:700;
+  }
+  .related-toggle:hover { border-color:var(--lavender); background:var(--lavender-light); }
+  .related-toggle .toggle-icon { transition:transform 0.3s ease; font-size:11px; }
+  .related-toggle.open .toggle-icon { transform:rotate(90deg); }
+  .related-content {
+    max-height:0; overflow:hidden; transition:max-height 0.4s ease;
+    border-left:2px solid rgba(196,181,232,0.3); margin-left:12px; margin-top:0;
+  }
+  .related-content.open { margin-top:10px; }
+  .related-content-inner { padding:14px 16px; font-size:13px; line-height:1.8; color:var(--text-mid); }
+  .related-content-inner strong { color:#c47a40; }
+  .related-q-label { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--lavender); margin-bottom:6px; text-transform:uppercase; }
+  .branch-buttons { display:flex; flex-direction:column; gap:10px; }
+  .btn-branch-ok {
+    width:100%; padding:14px; border-radius:14px;
+    font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease;
+    background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; border:none;
+    box-shadow:0 4px 16px rgba(244,167,185,0.4);
+  }
+  .btn-branch-ok:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+  .deepdive-link {
+    display:block; text-align:center; margin-top:12px;
+    font-size:12px; color:var(--text-light); text-decoration:none; cursor:pointer;
+    transition: color 0.2s ease; background:none; border:none; width:100%;
+    font-family:'Zen Maru Gothic',sans-serif; padding:6px;
+  }
+  .deepdive-link:hover { color:var(--pink-deep); }
+  .story-block {
+    background:linear-gradient(135deg, var(--lavender-light), var(--peach-light));
+    border:1.5px solid rgba(196,181,232,0.3); border-radius:16px; padding:22px; margin-bottom:18px; position:relative;
+  }
+  .story-block::before { content:'📖'; font-size:18px; position:absolute; top:-10px; left:18px; background:var(--surface); padding:0 6px; }
+  .story-lead { font-family:'Shippori Mincho',serif; font-size:16px; font-weight:700; color:#7a6ab8; line-height:1.6; margin-bottom:14px; }
+  .story-text { font-size:14px; line-height:2; color:var(--text); }
+  .story-text strong { color:#c47a40; }
+  .story-text em { color:var(--mint-deep); font-style:normal; font-weight:700; }
+  .advice-box { border-radius:16px; padding:20px; margin-bottom:20px; border:1.5px solid; }
+  .advice-box.memory-type { background:var(--lavender-light); border-color:rgba(196,181,232,0.5); }
+  .advice-box.understand-type { background:var(--mint-light); border-color:rgba(168,213,194,0.5); }
+  .advice-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .advice-badge { font-size:10px; font-weight:700; letter-spacing:1px; padding:3px 10px; border-radius:20px; text-transform:uppercase; }
+  .memory-type .advice-badge { background:rgba(196,181,232,0.4); color:#7a6ab8; }
+  .understand-type .advice-badge { background:rgba(168,213,194,0.4); color:var(--mint-deep); }
+  .advice-header-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .keyword-item {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(196,181,232,0.2); border:1px solid rgba(196,181,232,0.4);
+    border-radius:10px; padding:7px 12px;
+  }
+  .keyword-num { font-size:11px; color:#7a6ab8; font-weight:700; }
+  .keyword-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-note { font-size:11px; color:var(--text-light); margin-top:2px; }
+  .advice-text { font-size:13px; line-height:1.9; color:var(--text); }
+  .advice-text strong { color:var(--mint-deep); }
+  .card-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .mini-card {
+    border-radius:14px; padding:16px 18px;
+    border:1.5px solid rgba(196,181,232,0.3);
+    background:linear-gradient(135deg, var(--lavender-light), #fff);
+  }
+  .mini-card-title { font-size:13px; font-weight:700; color:#7a6ab8; margin-bottom:6px; }
+  .mini-card-desc { font-size:13px; color:var(--text); line-height:1.7; }
+  .mini-card-example { font-size:12px; color:var(--text-light); margin-top:4px; }
+  .result-box { text-align:center; padding:14px 0; margin-bottom:18px; }
+  .result-icon { font-size:44px; margin-bottom:8px; display:block; animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .result-title { font-family:'Shippori Mincho',serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+  .result-title.correct { color:var(--mint-deep); }
+  .result-title.wrong { color:var(--pink-deep); }
+  .complete-box { text-align:center; padding:16px 0; }
+  .complete-icon { font-size:56px; margin-bottom:14px; display:block; animation:popIn 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .complete-title { font-family:'Shippori Mincho',serif; font-size:24px; font-weight:700; color:var(--pink-deep); margin-bottom:18px; }
+  .score-detail { display:flex; justify-content:center; gap:24px; margin-bottom:20px; }
+  .score-item { text-align:center; }
+  .score-item-num { font-size:32px; font-weight:700; }
+  .score-item-label { font-size:11px; color:var(--text-light); margin-top:3px; }
+  .complete-message { font-size:13px; color:var(--text-mid); line-height:1.9; margin-bottom:24px; white-space:pre-line; }
+  .btn { width:100%; padding:15px; border:none; border-radius:14px; font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease; letter-spacing:0.3px; }
+  .btn-primary { background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; box-shadow:0 4px 16px rgba(244,167,185,0.4); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+  .btn-secondary { background:var(--surface); color:var(--text-mid); border:1.5px solid rgba(244,167,185,0.3); }
+  .btn-secondary:hover { border-color:var(--pink); color:var(--pink-deep); }
+  .btn-success { background:linear-gradient(135deg, var(--mint), var(--mint-deep)); color:white; box-shadow:0 4px 16px rgba(168,213,194,0.4); }
+  .btn-success:hover { transform:translateY(-2px); }
+  .btn-gold { background:linear-gradient(135deg, var(--peach), #e8904a); color:white; box-shadow:0 4px 16px rgba(247,196,160,0.4); }
+  .btn-gold:hover { transform:translateY(-2px); }
+  .btn-back {
+    display:inline-block; margin-top:14px; padding:6px 10px; border-radius:8px;
+    font-size:11px; font-weight:500; font-family:'Zen Maru Gothic',sans-serif;
+    cursor:pointer; transition:all 0.2s ease; background:transparent; border:none; color:var(--text-light); text-align:left;
+  }
+  .btn-back:hover { color:var(--text-mid); }
+  .hint { text-align:center; font-size:12px; color:var(--text-light); margin-bottom:14px; line-height:1.6; }
+  .hidden { display:none; }
+  @keyframes floatUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  @media (min-width: 768px) {
+    .app { max-width: 720px; }
+    .header h1 { font-size: 27px; }
+    .question-text { font-size: 18px; line-height: 2; padding: 22px 24px; }
+    .choice { font-size: 16px; padding: 16px 20px; }
+    .choice-num { width: 30px; height: 30px; font-size: 13px; }
+    .btn { font-size: 16px; padding: 17px; }
+    .btn-branch-ok { font-size: 16px; padding: 16px; }
+    .explanation-text { font-size: 16px; }
+    .story-text { font-size: 15px; }
+    .story-lead { font-size: 18px; }
+    .advice-text { font-size: 15px; }
+    .keyword-text { font-size: 15px; }
+    .keyword-note { font-size: 13px; }
+    .result-title { font-size: 26px; }
+    .complete-title { font-size: 28px; }
+    .hint { font-size: 14px; }
+    .related-toggle { font-size: 14px; }
+    .related-content-inner { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-badge">🌸 生成AIパスポート対策</div>
+    <h1>第3章　現在の生成AIの動向</h1>
+    <div class="header-deco"><div class="deco-line"></div><div class="deco-dot"></div><div class="deco-line right"></div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-meta"><span id="progressLabel">15問中1問目</span><span id="progressPct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div class="card" id="step1">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div class="q-num-simple" id="s1-qnum" style="margin-bottom:0;"></div>
+      <div style="font-size:12px; color:var(--text-light);">まず選択肢に目を通してみよう</div>
+    </div>
+    <div class="question-text" id="s1-qtext"></div>
+    <div class="choices" id="s1-choices"></div>
+    <p class="hint">💡 答えは選ばなくてOK</p>
+    <button class="btn btn-primary" onclick="showStep2()">解説を読む →</button>
+  </div>
+  <div class="card hidden" id="step2">
+    <div class="question-text" id="s2-qtext"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">かんたん解説</div>
+      <div class="explanation-text" id="s2-simple"></div>
+    </div>
+    <div id="s2-related"></div>
+    <div class="branch-buttons">
+      <button class="btn-branch-ok" onclick="showStep3()">理解できたので問題を解く →</button>
+      <button class="deepdive-link" onclick="showDeepDive()">🔍 もっと詳しく読む</button>
+    </div>
+    <button class="btn-back" onclick="showScreen('step1')">← 問題に戻る</button>
+  </div>
+  <div class="deepdive-card hidden" id="stepDeepDive">
+    <div id="deepdive-content"></div>
+    <button class="btn btn-primary" onclick="showStep3()">問題を解く →</button>
+    <button class="btn-back" onclick="showScreen('step2')">← かんたん解説に戻る</button>
+  </div>
+  <div class="card hidden" id="step3">
+    <div class="q-num-simple" id="s3-qnum"></div>
+    <div class="question-text" id="s3-qtext"></div>
+    <div class="choices" id="s3-choices"></div>
+    <button class="btn btn-secondary hidden" id="answerBtn" onclick="showResult()">答え合わせをする →</button>
+    <button class="btn-back" onclick="showStep2()">← 解説をもう一度確認する</button>
+  </div>
+  <div class="card hidden" id="step4">
+    <div class="result-box" id="resultBox"></div>
+    <div class="choices" id="s4-choices"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">ポイント</div>
+      <div class="explanation-text" id="s4-summary"></div>
+    </div>
+    <button class="btn btn-success" id="nextBtn" onclick="nextQuestion()">次の問題へ進む →</button>
+  </div>
+  <div class="card hidden" id="stepComplete">
+    <div class="complete-box">
+      <span class="complete-icon">🌸</span>
+      <div class="complete-title">第3章 完了！</div>
+      <div class="score-detail">
+        <div class="score-item"><div class="score-item-num" id="correctCount" style="color:var(--mint-deep)">0</div><div class="score-item-label">正解</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text-light)">／</div><div class="score-item-label">　</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text)">15</div><div class="score-item-label">問</div></div>
+        <div class="score-item"><div class="score-item-num" id="wrongCount" style="color:var(--pink-deep)">0</div><div class="score-item-label">不正解</div></div>
+      </div>
+      <div class="complete-message" id="completeMessage"></div>
+      <button class="btn btn-gold" onclick="restartQuiz()">もう一度チャレンジする 🌸</button>
+    </div>
+  </div>
+</div>
+<script>
+const questions = [
+  // ============================================================
+  // Section 1: 生成AIができること（Q1〜Q6）
+  // ============================================================
+
+  // Q1: データ前処理（リサイズ・正規化・augmentation）
+  {
+    chapter: '第3章 生成AIの動向',
+    question: 'AIが画像データを学習・処理する際の前処理に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'リサイズとは、画像のピクセル値を0〜1の範囲に変換して計算を安定させる処理である',
+      '正規化とは、画像の縦横サイズをAIが処理できる規定のサイズに揃える処理である',
+      'データ拡張（augmentation）とは、元の画像を反転・回転などして擬似的に学習データを増やす手法である',
+      'データ拡張は学習データの量を減らして過学習を防ぐための手法である'
+    ],
+    correct: 2,
+    simple: `AIに画像データを読み込ませる前には「前処理」が必要です。<strong>リサイズ</strong>は画像のサイズを揃える処理、<strong>正規化</strong>はピクセルの数値を計算しやすい範囲に変換する処理です。そして<strong>データ拡張（augmentation）</strong>は、元の画像を反転・回転・色味変更などして<strong>学習データを擬似的に増やす</strong>手法です。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① リサイズ（Resizing）</div><div class="mini-card-desc">画像の縦横の<strong>ピクセル数を、AIが処理できる規定のサイズに揃える</strong>処理。スマホ写真もデジカメ写真も、同じサイズに統一してからAIに渡します。</div><div class="mini-card-example">例：さまざまなサイズの写真を224×224ピクセルに統一</div></div><div class="mini-card"><div class="mini-card-title">② 正規化（Normalization）</div><div class="mini-card-desc">画像のピクセル値（通常0〜255）を<strong>0〜1や-1〜1の範囲に変換</strong>する処理。数値のスケールを揃えることで、AIの計算が安定し高速になります。</div><div class="mini-card-example">例：ピクセル値200 → 200÷255 ≒ 0.78に変換</div></div><div class="mini-card"><div class="mini-card-title">③ データ拡張（Augmentation）</div><div class="mini-card-desc">元の画像を<strong>反転・回転・拡大縮小・色味変更</strong>などで加工し、擬似的に学習データを増やす手法。少ないデータでも多様なパターンを学べるため、AIの精度が向上します。</div><div class="mini-card-example">例：猫の写真1枚 → 左右反転・回転で5パターンに増やす</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">引っかけパターンに注意</span></div><div class="advice-text">試験では<strong>リサイズと正規化の定義を入れ替えた選択肢</strong>が定番です。「サイズを揃える＝リサイズ」「値の範囲を変換＝正規化」の対応を正確に覚えましょう。</div></div>`,
+    summary: `リサイズは「サイズを揃える」、正規化は「数値の範囲を変換する」、データ拡張は「データを擬似的に増やす」。定義の入れ替えに注意しましょう。`,
+    related: []
+  },
+
+  // Q2: 自己回帰モデル
+  {
+    chapter: '第3章 生成AIの動向',
+    question: '自己回帰モデルに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '自己回帰モデルは、すべてのデータを同時に処理して一括で出力を生成する',
+      '自己回帰モデルは、直前までの出力をもとに次の出力を順番に予測していく仕組みである',
+      '自己回帰モデルは画像生成にのみ使われ、テキスト生成には使われない',
+      '自己回帰モデルは人間がルールを事前に定義する必要があるルールベースの一種である'
+    ],
+    correct: 1,
+    simple: `<strong>自己回帰モデル</strong>とは、「直前までの出力をもとに、次を予測する」仕組みです。ChatGPTが文章を一語ずつ生成していくのも、画像生成AIがピクセルを順番に作っていくのも、この考え方がベースになっています。テキストにも画像にも使われる、生成AIの基本的な仕組みのひとつです。`,
+    deepdive: `<div class="story-block"><div class="story-lead">しりとりのように、一語ずつ積み上げる</div><div class="story-text">ChatGPTに「今日の天気は」と入力すると、AIは次のように考えます。<br><br>「今日の天気は」→ 次は「晴れ」が確率高い → 「今日の天気は晴れ」<br>「今日の天気は晴れ」→ 次は「です」が確率高い → 「今日の天気は晴れです」<br><br>このように、<strong>すでに出力した内容を手がかりにして、次の一語を予測する</strong>。これを繰り返して文章全体を作っていきます。<br><br>これが<strong>自己回帰モデル</strong>の基本的な仕組みです。「自己」の出力を「回帰（フィードバック）」して次を予測する、という名前の通りの動きをしています。<br><br>GPTシリーズはまさにこの自己回帰モデルで、テキストだけでなく画像や音声の生成にも同じ考え方が応用されています。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">名前の由来で覚えよう</span></div><div class="advice-text"><strong>自己</strong>（＝自分の出力）を<strong>回帰</strong>（＝フィードバック）して次を予測。「一括処理」ではなく「順番に1つずつ」がポイントです。</div></div>`,
+    summary: `自己回帰モデルは<strong>直前までの出力をもとに次を順番に予測する仕組み</strong>です。テキストにも画像にも使われます。`,
+    related: []
+  },
+
+  // Q3: テキスト生成AI・主なサービス
+  {
+    chapter: '第3章 生成AIの動向',
+    question: '現在の主要なテキスト生成AIサービスに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'ChatGPTはGoogle社が開発した生成AIサービスである',
+      'GeminiはOpenAI社が開発した生成AIサービスである',
+      'ClaudeはAnthropic社が開発した生成AIサービスであり、安全性を重視した設計が特徴である',
+      'テキスト生成AIはすべてGPTの技術をベースに作られている'
+    ],
+    correct: 2,
+    simple: `現在の主要なテキスト生成AIには、<strong>ChatGPT（OpenAI）</strong>、<strong>Gemini（Google）</strong>、<strong>Claude（Anthropic）</strong>があります。それぞれ異なる企業が独自に開発しており、すべてがGPTベースというわけではありません。Claudeは安全性やアライメント（人間の意図との整合性）を重視した設計で知られています。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">ChatGPT（OpenAI）</div><div class="mini-card-desc">GPTシリーズをベースにした対話型AI。テキスト生成AIブームの火付け役で、世界的に最も知名度が高いサービスです。</div><div class="mini-card-example">開発元: OpenAI</div></div><div class="mini-card"><div class="mini-card-title">Gemini（Google）</div><div class="mini-card-desc">Googleが開発したマルチモーダルAI。テキスト・画像・音声・動画を統合的に扱えます。Google検索やGmailなどのサービスとの連携も特徴です。</div><div class="mini-card-example">開発元: Google</div></div><div class="mini-card"><div class="mini-card-title">Claude（Anthropic）</div><div class="mini-card-desc">Anthropic社が開発。<strong>安全性</strong>と<strong>アライメント</strong>（AIの出力を人間の意図に沿わせること）を重視した設計思想で知られています。</div><div class="mini-card-example">開発元: Anthropic</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">開発元の入れ替えに注意</span></div><div class="advice-text">試験では<strong>サービス名と開発元を入れ替えた選択肢</strong>が定番です。ChatGPT＝OpenAI、Gemini＝Google、Claude＝Anthropicの3セットを確実に覚えましょう。</div></div>`,
+    summary: `サービス名と開発元の対応を正確に覚えましょう。<strong>Claude＝Anthropic</strong>、ChatGPT＝OpenAI、Gemini＝Google。`,
+    related: []
+  },
+
+  // Q4: 画像生成AI ★不適切なものを選べ★
+  {
+    chapter: '第3章 生成AIの動向',
+    question: '画像生成AIに関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      '画像生成AIは、テキストによる指示（プロンプト）から画像を生成することができる',
+      '画像生成AIの技術は、広告やデザインの分野でも活用が広がっている',
+      '画像生成AIは入力されたプロンプトを正確に「理解」しているため、意図通りの画像が必ず生成される',
+      '画像生成AIの発展により、著作権やディープフェイクなどの新たな課題も生じている'
+    ],
+    correct: 2,
+    simple: `画像生成AIはテキストの指示から画像を作り出せる技術で、広告やデザインなど幅広い分野で活用されています。ただし、AIがプロンプトを「正確に理解」しているわけではなく、<strong>意図と違う画像が生成されることもよくあります</strong>。また、著作権の問題やディープフェイクへの悪用など、新たな課題も注目されています。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「猫が本を読んでいる写真」と入力したら、何が出てくる？</div><div class="story-text">画像生成AIに「猫がメガネをかけて本を読んでいる写真」と入力すると、それらしい画像は出てきます。でもよく見ると…<br><br>・メガネが顔にめり込んでいる<br>・本のページに意味不明な文字が書かれている<br>・指（肉球？）の本数がおかしい<br><br>こうした「惜しいけど違う」結果が出るのは、AIがプロンプトを<strong>言葉として「理解」しているわけではない</strong>から。学習データのパターンをもとに<strong>統計的にもっともらしい画像を生成</strong>しているだけです。<br><br>この仕組みの限界を知っておくことは、画像生成AIを正しく使いこなすうえで重要です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">「不適切」問題の攻略</span></div><div class="advice-text">「必ず〜できる」「完全に〜する」のような<strong>断定的な表現</strong>は、不適切な選択肢の典型パターンです。AIの限界を意識しましょう。</div></div>`,
+    summary: `画像生成AIはプロンプトを「理解」しているのではなく、<strong>統計的にもっともらしい画像を生成</strong>しています。「必ず意図通り」は不適切です。`,
+    related: []
+  },
+
+  // Q5: 音楽生成AI・音声生成AI
+  {
+    chapter: '第3章 生成AIの動向',
+    question: '音楽生成AIや音声生成AIに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '音楽生成AIは楽器演奏のみを生成でき、歌声の生成には対応していない',
+      '音声生成AIは、特定の人物の声を模倣した音声を生成することが可能であり、悪用のリスクも指摘されている',
+      '音声生成AIで作られた音声は、人間の声と容易に聞き分けられるため悪用の心配はない',
+      '音楽生成AIや音声生成AIはまだ研究段階にあり、実用化されたサービスは存在しない'
+    ],
+    correct: 1,
+    simple: `<strong>音楽生成AI</strong>はメロディや伴奏だけでなく歌声の生成も可能になっています。<strong>音声生成AI</strong>は、テキストを自然な音声に変換したり、特定の人物の声を模倣したりできます。ただし、声の模倣は<strong>なりすましや詐欺</strong>に悪用されるリスクがあり、大きな課題となっています。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① 音楽生成AI</div><div class="mini-card-desc">メロディ・コード進行・リズムなどを自動で作り出す技術。テキストで「明るいポップス調」と指定すると楽曲を生成できます。楽器演奏だけでなく<strong>歌声を含む楽曲全体</strong>の生成も可能になっています。</div><div class="mini-card-example">用途：BGM制作・作曲支援・広告音楽の自動生成</div></div><div class="mini-card"><div class="mini-card-title">② 音声生成AI</div><div class="mini-card-desc">テキストを入力すると<strong>人間のような自然な音声</strong>に変換する技術（TTS: Text-to-Speech）。さらに、わずか数秒の音声サンプルから<strong>特定の人物の声質を再現</strong>することも可能です。</div><div class="mini-card-example">用途：オーディオブック・吹き替え・音声アシスタント</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">音声生成の悪用リスクに注意</span></div><div class="advice-text">音声生成AIは特定の人物の声を模倣できるため、<strong>なりすまし詐欺や偽音声メッセージ</strong>への悪用リスクが指摘されています。「実用化されていない」「聞き分けられる」という過小評価は不適切です。</div></div>`,
+    summary: `音声生成AIは<strong>特定の人物の声を模倣でき、なりすまし等の悪用リスク</strong>がある点が重要です。すでに実用化されている技術です。`,
+    related: []
+  },
+
+  // Q6: 動画生成AI（Sora・Runway Gen-3・Luma Dream Machine・Veo3）
+  {
+    chapter: '第3章 生成AIの動向',
+    question: '動画生成AIに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'Soraは、テキストの指示から動画を生成できるOpenAI開発のAIモデルである',
+      'Runway Gen-3は、Googleが開発した動画生成AIである',
+      'Veo3は、Anthropic社が開発した動画生成モデルである',
+      'Luma Dream Machineは、音声のみを生成する専用AIである'
+    ],
+    correct: 0,
+    simple: `動画生成AIの分野では複数のサービスが登場しています。<strong>Sora</strong>はOpenAIが開発したテキストから動画を生成するモデル、<strong>Runway Gen-3</strong>はRunway社の動画生成AI、<strong>Luma Dream Machine</strong>はLuma AI社の動画生成サービス、<strong>Veo3</strong>はGoogleが開発した動画生成モデルです。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">Sora（OpenAI）</div><div class="mini-card-desc">テキストの指示から<strong>高品質な動画を生成</strong>するAI。「雪の中を歩く猫」のような説明文から、リアルな動画を作り出します。</div><div class="mini-card-example">開発元: OpenAI</div></div><div class="mini-card"><div class="mini-card-title">Runway Gen-3（Runway）</div><div class="mini-card-desc">クリエイター向けの動画生成AI。テキストや画像から動画を生成でき、<strong>映像制作の現場</strong>で活用されています。</div><div class="mini-card-example">開発元: Runway</div></div><div class="mini-card"><div class="mini-card-title">Luma Dream Machine（Luma AI）</div><div class="mini-card-desc">テキストや画像から<strong>リアルな動画シーンを生成</strong>するAI。高速な生成速度が特徴です。</div><div class="mini-card-example">開発元: Luma AI</div></div><div class="mini-card"><div class="mini-card-title">Veo3（Google）</div><div class="mini-card-desc">Googleが開発した動画生成モデル。<strong>高解像度の動画</strong>を生成でき、YouTube等のGoogleサービスとの連携が期待されています。</div><div class="mini-card-example">開発元: Google</div></div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">名前と開発元を対応させよう</span></div><div class="keyword-list"><div class="keyword-item"><span class="keyword-num">①</span><div><div class="keyword-text">Sora</div><div class="keyword-note">OpenAI</div></div></div><div class="keyword-item"><span class="keyword-num">②</span><div><div class="keyword-text">Runway Gen-3</div><div class="keyword-note">Runway</div></div></div><div class="keyword-item"><span class="keyword-num">③</span><div><div class="keyword-text">Luma Dream Machine</div><div class="keyword-note">Luma AI</div></div></div><div class="keyword-item"><span class="keyword-num">④</span><div><div class="keyword-text">Veo3</div><div class="keyword-note">Google</div></div></div></div></div>`,
+    summary: `Sora＝OpenAI、Runway Gen-3＝Runway、Luma Dream Machine＝Luma AI、Veo3＝Google。<strong>名前と開発元の対応</strong>を正確に押さえましょう。`,
+    related: [{ qIndex: 2, keyword: 'テキスト生成AIサービス' }]
+  },
+
+  // ============================================================
+  // Section 2: ディープフェイク（Q7〜Q8）
+  // ============================================================
+
+  // Q7: ディープフェイク技術概要
+  {
+    chapter: '第3章 ディープフェイク',
+    question: 'ディープフェイク（深層偽造）に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'ディープフェイクとは、ディープラーニング技術を用いて、本物そっくりの偽の画像や動画・音声などを生成する技術である',
+      'ディープフェイクで作られた映像は、現在の技術で100%検出できるため大きな脅威にはなっていない',
+      'ディープフェイクは動画のみに使われる技術であり、画像や音声には適用できない',
+      'ディープフェイクの技術はすべて違法であり、研究目的でも使用が禁止されている'
+    ],
+    correct: 0,
+    simple: `<strong>ディープフェイク（深層偽造）</strong>とは、ディープラーニング技術を使って<strong>本物そっくりの偽のコンテンツ</strong>（画像・動画・音声など）を生成する技術です。動画だけでなく画像や音声にも使われます。技術そのものが違法というわけではなく、映画のVFXなど正当な用途もありますが、<strong>悪用のリスク</strong>が大きな課題です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「見たものが信じられない」時代の到来</div><div class="story-text">かつて「写真に撮られたもの」「動画に映ったもの」は、証拠として信頼されていました。<br><br>しかしディープフェイク技術の登場で、その常識が揺らいでいます。<br><br><strong>ディープフェイク</strong>とは、「ディープラーニング」と「フェイク（偽物）」を組み合わせた造語です。AIが本物と見分けがつかないレベルの偽映像・偽音声を生成できるようになりました。<br><br>・政治家が言っていないことを「言っている動画」<br>・有名人が出演していない広告に「出演している映像」<br>・家族の声そっくりの詐欺電話<br><br>これらはすべて実際に起きている事例です。重要なのは、<strong>ディープフェイク技術そのものが違法なわけではない</strong>ということ。映画のVFXや教育コンテンツなど、正当な用途もあります。問題は<strong>悪用</strong>です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">覚えておきたいキーワード</span></div><div class="advice-text"><strong>ディープフェイク</strong>＝ディープラーニング＋フェイクの造語。画像・動画・音声すべてに適用可能。100%の検出は現時点で不可能です。</div></div>`,
+    summary: `ディープフェイクは<strong>ディープラーニングで本物そっくりの偽コンテンツを作る技術</strong>。画像・動画・音声すべてに使え、100%の検出はまだできません。`,
+    related: [{ qIndex: 4, keyword: '音声生成AI' }]
+  },
+
+  // Q8: ディープフェイク事件・ディスインフォメーション ★不適切なものを選べ★
+  {
+    chapter: '第3章 ディープフェイク',
+    question: 'ディープフェイクがもたらす社会的リスクに関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'ディープフェイクを用いた偽情報（ディスインフォメーション）が、選挙や政治に影響を与える事例が報告されている',
+      'ディープフェイクにより、本人の許可なく顔を入れ替えた動画が作成・拡散される被害が発生している',
+      'ディープフェイクの技術はAI研究者にしか使えないため、一般の人がこの技術を悪用する危険性は低い',
+      'ディープフェイクの拡散を防ぐため、AI生成コンテンツへの電子透かしの導入が議論されている'
+    ],
+    correct: 2,
+    simple: `ディープフェイクの作成ツールは一般に公開されているものも多く、<strong>専門知識がなくても誰でも偽映像を作れる時代</strong>になっています。「研究者にしか使えない」は不適切です。選挙への偽情報の影響、無断での顔入れ替え動画の被害などが実際に起きており、電子透かしなどの対策が議論されています。`,
+    deepdive: `<div class="story-block"><div class="story-lead">スマホ1つで、誰でも「偽の証拠」が作れる</div><div class="story-text">ディープフェイクの最大の脅威は、その<strong>アクセスのしやすさ</strong>です。<br><br>以前はAIの専門知識がなければ偽映像は作れませんでした。しかし現在は、無料アプリやWebサービスで誰でも簡単に顔を入れ替えた動画を作成できます。<br><br><strong>偽情報（ディスインフォメーション）</strong>として、次のような事例が報告されています：<br><br>・政治家の偽演説動画が選挙前にSNSで拡散<br>・有名人の顔を使った詐欺広告<br>・個人の顔を無断で使った嫌がらせ動画<br><br>対策として、AI生成コンテンツであることを示す<strong>電子透かし（ウォーターマーク）</strong>の導入や、検出AIの開発が進められています。</div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">キーワードを覚えよう</span></div><div class="keyword-list"><div class="keyword-item"><span class="keyword-num">①</span><div><div class="keyword-text">ディスインフォメーション</div><div class="keyword-note">意図的に流される偽情報</div></div></div><div class="keyword-item"><span class="keyword-num">②</span><div><div class="keyword-text">電子透かし</div><div class="keyword-note">AI生成物であることを示す仕組み</div></div></div></div></div>`,
+    summary: `ディープフェイクは<strong>専門知識がなくても誰でも作れる</strong>のが現状。「研究者にしか使えない」は不適切です。ディスインフォメーション（偽情報）もセットで覚えましょう。`,
+    related: [{ qIndex: 6, keyword: 'ディープフェイク' }]
+  },
+
+  // ============================================================
+  // Section 3: RAG（Q9〜Q11）
+  // ============================================================
+
+  // Q9: RAG概要・歴史・仕組み
+  {
+    chapter: '第3章 RAG',
+    question: 'RAG（検索拡張生成）に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'RAGとは、AIがインターネット上の情報をリアルタイムで学習し、知識を常に最新に保つ技術である',
+      'RAGとは、AIが回答を生成する前に外部の知識ベースを検索し、その情報をもとに回答する仕組みである',
+      'RAGはAIモデルそのものを再学習させる手法であり、大量の計算資源が必要である',
+      'RAGでは外部データを使わず、AIが学習済みの知識だけで回答の精度を高める技術である'
+    ],
+    correct: 1,
+    simple: `<strong>RAG（Retrieval-Augmented Generation ＝ 検索拡張生成）</strong>は、AIが回答する前に<strong>外部の知識ベースを検索して情報を取得</strong>し、その情報をもとに回答を生成する仕組みです。AIモデルを再学習させるのではなく、外部データを「参照」して回答の精度を高めるのがポイントです。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「調べてから答える」AI</div><div class="story-text">通常の生成AIは、学習済みの知識だけで回答します。これは「教科書を丸暗記した学生」のようなもの。教科書に載っていないことは答えられません。<br><br><strong>RAG</strong>は、この学生に「回答する前に図書館で調べてきていいよ」と許可を与えるようなものです。<br><br>① ユーザーが質問する<br>② AIがまず<strong>知識ベース（データベース）を検索</strong>する<br>③ 見つけた情報を参考にして回答を生成する<br><br>重要なのは、AIモデル自体を再学習させるわけではないということ。知識ベースの内容を更新するだけで、<strong>最新情報に対応できる</strong>のがRAGの強みです。<br><br>企業の社内マニュアルや最新の規約など、AIが学習していない情報にも対応できるため、ビジネスでの活用が急速に広がっています。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">RAGの本質</span></div><div class="advice-text">RAGは「再学習」ではなく「検索して参照」。知識ベースを更新するだけで最新情報に対応できる<strong>手軽さ</strong>がビジネスで重宝されている理由です。</div></div>`,
+    summary: `RAGは<strong>外部の知識ベースを検索してから回答を生成する仕組み</strong>です。AIの再学習は不要で、知識ベースの更新だけで最新情報に対応できます。`,
+    related: []
+  },
+
+  // Q10: RAG技術詳細（チャンク・ベクトルDB）
+  {
+    chapter: '第3章 RAG',
+    question: 'RAGの技術的な仕組みに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'チャンクとは、文書を検索しやすいように小さな単位に分割したものを指す',
+      'ベクトルデータベースとは、文書の原文をそのまま保存するデータベースのことである',
+      'RAGではチャンク分割は不要であり、文書全体をそのままAIに入力する',
+      'ベクトルデータベースではキーワードの完全一致でのみ検索を行う'
+    ],
+    correct: 0,
+    simple: `RAGでは、まず文書を<strong>チャンク</strong>と呼ばれる小さな単位に分割します。次に、各チャンクを数値の並び（ベクトル）に変換して<strong>ベクトルデータベース</strong>に保存します。質問が来たとき、質問文もベクトルに変換し、<strong>意味が近いチャンク</strong>を素早く検索してAIに渡します。`,
+    deepdive: `<div class="story-block"><div class="story-lead">本を丸ごと読むのではなく「付箋のページだけ」見る</div><div class="story-text">1,000ページの社内マニュアルがあるとします。「育休の申請方法」を聞かれたとき、AIに1,000ページ全部を読ませるのは非効率ですよね。<br><br>RAGでは、まずこのマニュアルを<strong>チャンク（小さな単位）</strong>に分割します。「育休の申請」「交通費の精算」「出張の手続き」…というように、意味のあるまとまりごとに分けます。<br><br>次に、各チャンクを<strong>ベクトル（数値の並び）</strong>に変換して保存。これが<strong>ベクトルデータベース</strong>です。<br><br>質問が来ると、質問文もベクトルに変換し、「意味が近い」チャンクを検索します。キーワードが完全に一致しなくても、<strong>「意味の近さ」で検索できる</strong>のがベクトル検索の強みです。<br><br>たとえば「育児休暇」と「育休」は同じ言葉ではありませんが、ベクトル空間では近い位置に配置されるため、正しくヒットします。</div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">RAGの技術用語</span></div><div class="keyword-list"><div class="keyword-item"><span class="keyword-num">①</span><div><div class="keyword-text">チャンク</div><div class="keyword-note">文書を検索しやすい小さな単位に分割</div></div></div><div class="keyword-item"><span class="keyword-num">②</span><div><div class="keyword-text">ベクトルデータベース</div><div class="keyword-note">チャンクを数値（ベクトル）で保存・検索</div></div></div></div></div>`,
+    summary: `<strong>チャンク＝文書の分割単位</strong>、<strong>ベクトルデータベース＝意味の近さで検索できるDB</strong>。キーワードの完全一致ではなく「意味検索」ができる点がポイント。`,
+    related: [{ qIndex: 8, keyword: 'RAG' }]
+  },
+
+  // Q11: RAGのメリット・ユースケース ★不適切なものを選べ★
+  {
+    chapter: '第3章 RAG',
+    question: 'RAGのメリットやユースケースに関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'RAGを導入することで、AIが学習していない最新の社内情報にも対応できるようになる',
+      'RAGは外部の知識ベースを参照するため、ハルシネーション（事実と異なる回答）を軽減できる',
+      'RAGを導入すれば、知識ベースに登録されていない情報についてもAIが正確に回答できるようになる',
+      'RAGは社内FAQ、マニュアル検索、カスタマーサポートなど幅広い分野で活用されている'
+    ],
+    correct: 2,
+    simple: `RAGは知識ベースに登録された情報をもとに回答する仕組みなので、<strong>登録されていない情報には対応できません</strong>。「RAGを入れればすべてに答えられる」は過信です。一方で、最新の社内情報への対応やハルシネーションの軽減は、RAGの大きなメリットです。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「図書館にない本」の質問には答えられない</div><div class="story-text">RAGを「図書館で調べてから答えるAI」とイメージしましたよね。<br><br>では、その図書館に探している本が置いていなかったら？ 当然、正確には答えられません。<br><br>RAGのメリットは確かに大きいです：<br>・知識ベースを更新すれば<strong>最新情報に対応</strong>できる<br>・外部情報を参照するので<strong>ハルシネーションが減る</strong><br>・社内FAQ、マニュアル、カスタマーサポートなど<strong>幅広く活用</strong>できる<br><br>しかし限界もあります。<strong>知識ベースに登録されていない情報</strong>については、通常の生成AIと同じく正確な回答はできません。RAGは「万能薬」ではなく、<strong>知識ベースの品質と範囲がそのまま回答の品質に直結</strong>する仕組みです。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">RAGの限界を押さえる</span></div><div class="advice-text">RAGのメリットを過大評価する選択肢（「すべてに答えられる」「完全に防げる」等）は<strong>不適切</strong>。メリットと限界の両面を理解しましょう。</div></div>`,
+    summary: `RAGは知識ベースの情報をもとに回答するため、<strong>登録されていない情報には答えられない</strong>。メリットだけでなく限界も押さえましょう。`,
+    related: [{ qIndex: 9, keyword: 'チャンク・ベクトルDB' }]
+  },
+
+  // ============================================================
+  // Section 4: AIエージェント（Q12〜Q14）
+  // ============================================================
+
+  // Q12: AIエージェント概念
+  {
+    chapter: '第3章 AIエージェント',
+    question: 'AIエージェントに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'AIエージェントとは、ユーザーが毎回詳細な指示を出す必要がある従来型のAIチャットボットの別名である',
+      'AIエージェントとは、AIが目的を理解し、自ら計画を立てて外部ツールを使いながら自律的にタスクを実行する仕組みである',
+      'AIエージェントはテキスト生成のみが可能で、ブラウザ操作やファイル編集などの実行能力は持たない',
+      'AIエージェントは人間が常に監視していないと動作しないため、自律的とは呼べない'
+    ],
+    correct: 1,
+    simple: `<strong>AIエージェント</strong>とは、ユーザーが毎回細かい指示を出さなくても、AIが<strong>自ら目的を理解し、計画を立て、外部ツールを使って自律的にタスクを完了させる</strong>仕組みです。従来のチャットボット（1回の質問に1回答える形式）とは異なり、複数のステップを自分で判断しながら進められるのが特徴です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「秘書」と「インターン」の違い</div><div class="story-text">従来のAIチャットボットは「インターン」のようなもの。一つ一つの作業を具体的に指示しないと動けません。<br><br>「このファイルを開いて」「3行目を修正して」「保存して」「メールに添付して」「送って」…すべて指示が必要です。<br><br>一方、<strong>AIエージェント</strong>は「優秀な秘書」。「来週のプレゼン資料を整えて関係者に送っておいて」と言うだけで、<br><br>① 資料を探す<br>② 内容を修正する<br>③ メールを作成する<br>④ 関係者に送信する<br><br>…という<strong>一連のタスクを自分で計画し、必要なツールを使い分けながら実行</strong>してくれます。<br><br>ブラウザを操作したり、ファイルを編集したり、検索をしたり。AIがさまざまな「道具」を使いこなせるようになったことで、AIエージェントが実現しました。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">AIエージェントの3つの特徴</span></div><div class="advice-text"><strong>① 目的の理解</strong>：何を達成すべきか把握する<br><strong>② 計画の立案</strong>：手順を自分で考える<br><strong>③ ツールの活用</strong>：検索・ブラウザ操作・ファイル編集等を実行する</div></div>`,
+    summary: `AIエージェントは<strong>自ら計画を立てて外部ツールを使い、自律的にタスクを実行する仕組み</strong>。従来のチャットボットとは異なる概念です。`,
+    related: []
+  },
+
+  // Q13: AIエージェントの仕組み・マルチエージェント
+  {
+    chapter: '第3章 AIエージェント',
+    question: 'AIエージェントの仕組みに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'マルチエージェントとは、1つのAIが複数のタスクを同時に処理する機能のことである',
+      'AIエージェントは外部ツールを一切使わず、AIモデル内部の知識だけでタスクを完了させる仕組みである',
+      'マルチエージェントとは、計画・実行・検証など異なる役割を持つ複数のAIが連携してタスクをこなすシステムである',
+      'AIエージェントはすべて同じ仕組みで動いており、役割の分担という概念は存在しない'
+    ],
+    correct: 2,
+    simple: `<strong>マルチエージェント</strong>とは、「計画を立てるAI」「実行するAI」「結果をチェックするAI」など、<strong>異なる役割を持つ複数のAIがチームのように連携</strong>して複雑なタスクを処理するシステムです。1つのAIがすべてを担うのではなく、専門分野ごとに分担することで精度と効率を高めています。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「一人の天才」より「専門家チーム」</div><div class="story-text">大きなプロジェクトを1人でこなすのは大変ですよね。企画・実行・品質チェック…すべてを1人でやると、ミスが増えたり効率が落ちたりします。<br><br>AIの世界でも同じ発想があります。<br><br><strong>マルチエージェント</strong>は、複数の専門AIが「チーム」を組む仕組みです。<br><br>・<strong>計画担当AI</strong>：タスクの手順を考える<br>・<strong>実行担当AI</strong>：ブラウザ操作やファイル編集を行う<br>・<strong>検証担当AI</strong>：結果が正しいかチェックする<br><br>それぞれが得意な役割に集中し、互いの結果を引き継ぎながらタスクを完成させます。1つのAIにすべてを任せるより、<strong>複雑なタスクの品質が向上</strong>するのがマルチエージェントの強みです。</div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">マルチエージェントの本質</span></div><div class="keyword-list"><div class="keyword-item"><span class="keyword-num">①</span><div><div class="keyword-text">マルチエージェント</div><div class="keyword-note">複数のAIが役割分担して連携する仕組み</div></div></div></div></div>`,
+    summary: `マルチエージェントは<strong>異なる役割を持つ複数のAIが連携するシステム</strong>。「1つのAIの同時処理」ではなく「チームとしての分担」がポイントです。`,
+    related: [{ qIndex: 11, keyword: 'AIエージェント' }]
+  },
+
+  // Q14: MCP・外部連携 ★不適切なものを選べ★
+  {
+    chapter: '第3章 AIエージェント',
+    question: 'AIエージェントの外部連携に関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'MCP（Model Context Protocol）は、AIが外部ツールやデータソースと連携するための標準的なプロトコルである',
+      'MCPによって、AIエージェントはカレンダー、メール、データベースなどの外部サービスと接続できるようになる',
+      'MCPが普及すれば、外部ツールとの連携に個別の開発が不要になり、AIの活用範囲が広がると期待されている',
+      'MCPはAIが学習データを自動的に収集するための仕組みであり、外部ツールの操作とは無関係である'
+    ],
+    correct: 3,
+    simple: `<strong>MCP（Model Context Protocol）</strong>は、AIが外部のツールやサービス（カレンダー、メール、データベースなど）と<strong>連携するための標準的なプロトコル（通信の約束事）</strong>です。学習データの収集ではなく、AIが外部ツールを「使う」ための仕組みです。MCPの普及により、個別の連携開発が減り、AIエージェントの活用範囲が広がると期待されています。`,
+    deepdive: `<div class="story-block"><div class="story-lead">AIに「手」を与えるための共通言語</div><div class="story-text">AIエージェントが「秘書」として働くには、さまざまなツールを操作できる必要があります。カレンダーを確認し、メールを送り、データベースを検索する…<br><br>しかし問題は、<strong>ツールごとに接続方法が違う</strong>こと。カレンダーにはカレンダー用のプログラム、メールにはメール用のプログラムを個別に書かなければなりませんでした。<br><br><strong>MCP（Model Context Protocol）</strong>は、この問題を解決する「共通規格」です。<br><br>USBポートを思い浮かべてください。USBが登場する前は、プリンタにはプリンタ用の端子、カメラにはカメラ用の端子が必要でした。USBという共通規格ができたことで、1つのポートで何でもつながるようになりましたよね。<br><br>MCPはAIにとっての「USB」です。この共通プロトコルに対応さえすれば、どんなツールやサービスともAIがつながれるようになります。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">MCPの役割を整理</span></div><div class="advice-text"><strong>MCP</strong>＝AIと外部ツールをつなぐ<strong>共通の通信規格</strong>。「学習データの収集」ではなく「ツールの連携・操作」が目的です。</div></div>`,
+    summary: `MCPは<strong>AIと外部ツールをつなぐ共通プロトコル</strong>。学習データの収集ではなく、ツール連携のための仕組みです。`,
+    related: [{ qIndex: 12, keyword: 'マルチエージェント' }]
+  },
+
+  // ============================================================
+  // Section 5: 章横断総合（Q15）
+  // ============================================================
+
+  // Q15: 章横断総合
+  {
+    chapter: '第3章 総合',
+    question: '第3章で学んだ生成AIの動向に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'RAGは外部の知識ベースを検索して回答するため、ハルシネーションを完全に防ぐことができる',
+      'ディープフェイクはディープラーニング技術を用いた偽造技術であり、動画だけでなく画像や音声にも適用される',
+      'AIエージェントは従来のチャットボットと同じく、ユーザーの指示を1つずつ処理する仕組みである',
+      'データ拡張（augmentation）とは、学習データの量を減らすことでAIの精度を上げる手法である'
+    ],
+    correct: 1,
+    simple: `第3章で学んだ主要なキーワードを整理しましょう。<strong>ディープフェイク</strong>はディープラーニングによる偽造技術で、画像・動画・音声すべてに適用されます。RAGはハルシネーションを「軽減」できますが「完全に防ぐ」ことはできません。AIエージェントは従来のチャットボットとは異なり自律的にタスクを実行し、データ拡張はデータを「増やす」手法です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">第3章の全体像を振り返ろう</div><div class="story-text">第3章で学んだ内容を整理します。<br><br><strong>【生成AIができること】</strong><br>・テキスト生成AI：ChatGPT（OpenAI）、Gemini（Google）、Claude（Anthropic）<br>・画像生成AI：テキストから画像を生成。著作権問題も<br>・音楽・音声生成AI：声の模倣、なりすましリスク<br>・動画生成AI：Sora（OpenAI）、Runway Gen-3、Luma Dream Machine、Veo3（Google）<br><br><strong>【データ前処理】</strong><br>リサイズ（サイズ揃え）→ 正規化（数値変換）→ データ拡張（水増し）<br><br><strong>【ディープフェイク】</strong><br>画像・動画・音声の偽造技術。ディスインフォメーション（偽情報）の拡散が社会的課題<br><br><strong>【RAG】</strong><br>外部の知識ベースを検索して回答。チャンク分割→ベクトルDB→意味検索<br><br><strong>【AIエージェント】</strong><br>自律的にタスク実行。マルチエージェント＝複数AIの連携。MCP＝外部ツール連携の共通規格</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">「完全に」に注意</span></div><div class="advice-text">RAGは「完全に防ぐ」のではなく<strong>「軽減」</strong>。ディープフェイクは「100%検出可能」ではない。<strong>断定的すぎる表現は不適切の可能性が高い</strong>と覚えておきましょう。</div></div>`,
+    summary: `ディープフェイクは<strong>画像・動画・音声すべてに適用される偽造技術</strong>。第3章全体の「断定的な表現＝不適切」パターンにも注意しましょう。`,
+    related: [{ qIndex: 8, keyword: 'RAG' }, { qIndex: 6, keyword: 'ディープフェイク' }]
+  }
+];
+
+let currentQ = 0, selectedIdx = null, correctCount = 0, wrongCount = 0;
+const allScreens = ['step1','step2','stepDeepDive','step3','step4','stepComplete'];
+
+function showScreen(id) {
+  allScreens.forEach(s => document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateProgress() {
+  const total = questions.length;
+  const pct = Math.round((currentQ / total) * 100);
+  document.getElementById('progressLabel').textContent = `${total}問中${currentQ+1}問目`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressFill').style.width = `${pct}%`;
+}
+
+function renderChoices(cid, choices, clickable) {
+  const c = document.getElementById(cid); c.innerHTML = '';
+  choices.forEach((text, i) => {
+    const d = document.createElement('div');
+    d.className = 'choice' + (clickable ? ' clickable' : '');
+    if (clickable) d.onclick = () => selectChoice(i);
+    d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text}</span>`;
+    c.appendChild(d);
+  });
+}
+
+function renderRelated(containerId, relatedArr) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if (!relatedArr || relatedArr.length === 0) return;
+  relatedArr.forEach(rel => {
+    const q = questions[rel.qIndex];
+    if (!q) return;
+    const block = document.createElement('div');
+    block.className = 'related-block';
+    const toggle = document.createElement('button');
+    toggle.className = 'related-toggle';
+    toggle.innerHTML = `<span class="toggle-icon">▶</span> 🔗 関連：${rel.keyword}（問題${rel.qIndex+1}）`;
+    const content = document.createElement('div');
+    content.className = 'related-content';
+    content.innerHTML = `<div class="related-content-inner"><div class="related-q-label">問題${rel.qIndex+1}のかんたん解説</div>${q.simple}</div>`;
+    toggle.onclick = () => {
+      toggle.classList.toggle('open');
+      if (content.classList.contains('open')) {
+        content.style.maxHeight = '0';
+        content.classList.remove('open');
+      } else {
+        content.classList.add('open');
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    };
+    block.appendChild(toggle);
+    block.appendChild(content);
+    container.appendChild(block);
+  });
+}
+
+function loadQuestion(idx) {
+  const q = questions[idx];
+  const qnum = `問題 ${idx+1}`;
+  document.getElementById('s1-qnum').textContent = qnum;
+  document.getElementById('s1-qtext').innerHTML = q.question;
+  renderChoices('s1-choices', q.choices, false);
+  document.getElementById('s2-qtext').innerHTML = q.question;
+  document.getElementById('s2-simple').innerHTML = q.simple;
+  renderRelated('s2-related', q.related);
+  document.getElementById('deepdive-content').innerHTML = q.deepdive;
+  document.getElementById('s3-qnum').textContent = qnum;
+  document.getElementById('s3-qtext').innerHTML = q.question;
+  renderChoices('s3-choices', q.choices, true);
+  selectedIdx = null;
+  document.getElementById('answerBtn').classList.add('hidden');
+}
+
+function showStep2() { showScreen('step2'); }
+function showDeepDive() { showScreen('stepDeepDive'); }
+function showStep3() {
+  showScreen('step3');
+  selectedIdx = null;
+  document.querySelectorAll('#s3-choices .choice').forEach(c => c.className = 'choice clickable');
+  document.getElementById('answerBtn').classList.add('hidden');
+}
+
+function selectChoice(idx) {
+  selectedIdx = idx;
+  document.querySelectorAll('#s3-choices .choice').forEach(c => c.className = 'choice clickable');
+  document.querySelectorAll('#s3-choices .choice')[idx].classList.add('selected');
+  document.getElementById('answerBtn').classList.remove('hidden');
+}
+
+function showResult() {
+  const q = questions[currentQ], isCorrect = selectedIdx === q.correct;
+  if (isCorrect) correctCount++; else wrongCount++;
+  document.getElementById('resultBox').innerHTML = isCorrect
+    ? `<span class="result-icon">🌸</span><div class="result-title correct">正解！</div>`
+    : `<span class="result-icon">💭</span><div class="result-title wrong">惜しい！</div>`;
+  const s4 = document.getElementById('s4-choices'); s4.innerHTML = '';
+  q.choices.forEach((text, i) => {
+    const d = document.createElement('div');
+    if (i === q.correct) { d.className = 'choice correct'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text} ✓</span>`; }
+    else if (i === selectedIdx && !isCorrect) { d.className = 'choice wrong'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text} ✗</span>`; }
+    else { d.className = 'choice'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text}</span>`; }
+    s4.appendChild(d);
+  });
+  document.getElementById('s4-summary').innerHTML = q.summary;
+  const nb = document.getElementById('nextBtn');
+  if (currentQ === questions.length - 1) { nb.textContent = '結果を見る 🌸'; nb.className = 'btn btn-gold'; }
+  else { nb.textContent = '次の問題へ進む →'; nb.className = 'btn btn-success'; }
+  showScreen('step4');
+}
+
+function nextQuestion() {
+  if (currentQ === questions.length - 1) { showComplete(); return; }
+  currentQ++;
+  loadQuestion(currentQ);
+  updateProgress();
+  showScreen('step1');
+}
+
+function showComplete() {
+  document.getElementById('correctCount').textContent = correctCount;
+  document.getElementById('wrongCount').textContent = wrongCount;
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressPct').textContent = '100%';
+  document.getElementById('progressLabel').textContent = `15問中15問目`;
+  const pct = correctCount / questions.length;
+  let msg = pct === 1 ? '全問正解！素晴らしいです🌸\n第3章の内容はバッチリです。第4章へ進みましょう！'
+    : pct >= 0.8 ? 'とてもよくできました！\n間違えた問題だけもう一度確認してみましょう。'
+    : pct >= 0.6 ? 'まずまずです！\n間違えた問題の解説を読み直してから、もう一度チャレンジを。'
+    : 'もう一度チャレンジしてみましょう！\n深掘り解説をじっくり読んでから再挑戦すると定着します。';
+  document.getElementById('completeMessage').textContent = msg;
+  showScreen('stepComplete');
+}
+
+function restartQuiz() {
+  currentQ = 0; selectedIdx = null; correctCount = 0; wrongCount = 0;
+  loadQuestion(0);
+  updateProgress();
+  showScreen('step1');
+}
+
+loadQuestion(0);
+updateProgress();
+showScreen('step1');
+</script>
+</body>
+</html>

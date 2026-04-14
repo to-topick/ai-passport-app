@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<title>生成AIパスポート 第4章 情報リテラシー・AI事業者ガイドライン・AI新法</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf8f5;
+    --surface: #ffffff;
+    --surface2: #fef3f0;
+    --surface3: #f0f7f4;
+    --pink: #f4a7b9;
+    --pink-light: #fde8ee;
+    --pink-deep: #e8849a;
+    --mint: #a8d5c2;
+    --mint-light: #e6f5ef;
+    --mint-deep: #7bbfa8;
+    --peach: #f7c4a0;
+    --peach-light: #fef0e6;
+    --lavender: #c4b5e8;
+    --lavender-light: #ede8f8;
+    --text: #3d3335;
+    --text-mid: #7a6568;
+    --text-light: #b09a9d;
+    --border: rgba(244,167,185,0.25);
+    --shadow: 0 4px 24px rgba(244,167,185,0.15);
+    --shadow-sm: 0 2px 12px rgba(244,167,185,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; color-scheme: light; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(244,167,185,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(168,213,194,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(196,181,232,0.06) 0%, transparent 70%);
+  }
+  .app { width:100%; max-width:640px; }
+  .header { text-align:center; margin-bottom:28px; animation: floatUp 0.7s ease; }
+  .header-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
+    border: 1.5px solid rgba(244,167,185,0.4);
+    color: var(--pink-deep); font-size:11px; font-weight:700; letter-spacing:2px;
+    padding:6px 18px; border-radius:20px; margin-bottom:14px; text-transform:uppercase;
+  }
+  .header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size:23px; font-weight:700; color: var(--text); line-height:1.6;
+  }
+  .header-deco { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px; }
+  .deco-line { width:40px; height:1.5px; background:linear-gradient(90deg, transparent, var(--pink)); }
+  .deco-line.right { background:linear-gradient(90deg, var(--pink), transparent); }
+  .deco-dot { width:5px; height:5px; border-radius:50%; background:var(--pink); }
+  .progress-wrap { margin-bottom:22px; animation: floatUp 0.7s ease 0.05s both; }
+  .progress-meta { display:flex; justify-content:space-between; font-size:12px; color:var(--text-light); margin-bottom:8px; }
+  .progress-bar { height:6px; background:var(--pink-light); border-radius:10px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--pink), var(--peach)); border-radius:10px; transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--pink), var(--peach), var(--mint));
+    border-radius:24px 24px 0 0;
+  }
+  .deepdive-card {
+    background: var(--surface); border: 1.5px solid rgba(247,196,160,0.4);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: 0 4px 24px rgba(247,196,160,0.2);
+    position:relative; overflow:hidden;
+  }
+  .deepdive-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--peach), var(--lavender));
+    border-radius:24px 24px 0 0;
+  }
+  .q-num-simple { font-size:12px; color:var(--text-light); text-align:right; margin-bottom:10px; font-weight:700; letter-spacing:1px; }
+  .question-text {
+    font-family:'Shippori Mincho', serif; font-size:16px; line-height:1.9;
+    margin-bottom:22px; padding:18px 20px;
+    background: linear-gradient(135deg, var(--surface2), #fff9f7);
+    border-radius:16px; border-left:3px solid var(--pink); color: var(--text);
+  }
+  .choices { display:flex; flex-direction:column; gap:10px; margin-bottom:22px; }
+  .choice {
+    display:flex; align-items:center; gap:12px; padding:14px 18px;
+    background: var(--surface); border: 1.5px solid rgba(244,167,185,0.2);
+    border-radius:14px; font-size:14px; color:#5a4a4d;
+    font-family:'Shippori Mincho', serif; transition:all 0.2s ease; line-height:1.6;
+  }
+  .choice.clickable { cursor:pointer; }
+  .choice.clickable:hover { border-color:var(--pink); background:var(--pink-light); color:var(--text); transform:translateX(4px); box-shadow:var(--shadow-sm); }
+  .choice.selected { border-color:var(--pink-deep); background:var(--pink-light); color:var(--text); box-shadow:var(--shadow-sm); }
+  .choice.correct { border-color:var(--mint-deep); background:var(--mint-light); color:var(--text); }
+  .choice.wrong { border-color:#e8a0aa; background:#fdf0f2; color:var(--text-light); text-decoration:line-through; }
+  .choice-num {
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; transition:all 0.2s ease;
+    background:var(--pink-light); color:var(--pink-deep); border:1.5px solid rgba(244,167,185,0.4);
+  }
+  .choice.selected .choice-num { background:var(--pink-deep); color:white; border-color:var(--pink-deep); }
+  .choice.correct .choice-num { background:var(--mint-deep); color:white; border-color:var(--mint-deep); }
+  .choice.wrong .choice-num { background:#f0c4c8; color:#c47a80; border-color:#e8a0aa; }
+  .simple-explanation { background:var(--surface2); border-radius:16px; padding:22px; margin-bottom:22px; border:1px solid rgba(244,167,185,0.15); }
+  .explanation-title {
+    font-size:11px; font-weight:700; color:#c47a40; letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .explanation-title::before { content:''; width:3px; height:14px; background:var(--peach); border-radius:2px; display:inline-block; }
+  .explanation-text { font-size:14px; line-height:1.9; color:var(--text); }
+  .explanation-text strong { color:#c47a40; }
+  .related-block { margin-bottom:22px; }
+  .related-toggle {
+    display:flex; align-items:center; gap:8px; width:100%; padding:12px 16px;
+    background: linear-gradient(135deg, var(--lavender-light), #f8f5fd);
+    border: 1.5px solid rgba(196,181,232,0.35);
+    border-radius:12px; cursor:pointer; transition:all 0.2s ease;
+    font-family:'Zen Maru Gothic',sans-serif; font-size:13px; color:#7a6ab8; font-weight:700;
+  }
+  .related-toggle:hover { border-color:var(--lavender); background:var(--lavender-light); }
+  .related-toggle .toggle-icon { transition:transform 0.3s ease; font-size:11px; }
+  .related-toggle.open .toggle-icon { transform:rotate(90deg); }
+  .related-content {
+    max-height:0; overflow:hidden; transition:max-height 0.4s ease;
+    border-left:2px solid rgba(196,181,232,0.3); margin-left:12px; margin-top:0;
+  }
+  .related-content.open { margin-top:10px; }
+  .related-content-inner { padding:14px 16px; font-size:13px; line-height:1.8; color:var(--text-mid); }
+  .related-content-inner strong { color:#c47a40; }
+  .related-q-label { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--lavender); margin-bottom:6px; text-transform:uppercase; }
+  .branch-buttons { display:flex; flex-direction:column; gap:10px; }
+  .btn-branch-ok {
+    width:100%; padding:14px; border-radius:14px;
+    font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease;
+    background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; border:none;
+    box-shadow:0 4px 16px rgba(244,167,185,0.4);
+  }
+  .btn-branch-ok:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+  .deepdive-link {
+    display:block; text-align:center; margin-top:12px;
+    font-size:12px; color:var(--text-light); text-decoration:none; cursor:pointer;
+    transition: color 0.2s ease; background:none; border:none; width:100%;
+    font-family:'Zen Maru Gothic',sans-serif; padding:6px;
+  }
+  .deepdive-link:hover { color:var(--pink-deep); }
+  .story-block {
+    background:linear-gradient(135deg, var(--lavender-light), var(--peach-light));
+    border:1.5px solid rgba(196,181,232,0.3); border-radius:16px; padding:22px; margin-bottom:18px; position:relative;
+  }
+  .story-block::before { content:'📖'; font-size:18px; position:absolute; top:-10px; left:18px; background:var(--surface); padding:0 6px; }
+  .story-lead { font-family:'Shippori Mincho',serif; font-size:16px; font-weight:700; color:#7a6ab8; line-height:1.6; margin-bottom:14px; }
+  .story-text { font-size:14px; line-height:2; color:var(--text); }
+  .story-text strong { color:#c47a40; }
+  .story-text em { color:var(--mint-deep); font-style:normal; font-weight:700; }
+  .advice-box { border-radius:16px; padding:20px; margin-bottom:20px; border:1.5px solid; }
+  .advice-box.memory-type { background:var(--lavender-light); border-color:rgba(196,181,232,0.5); }
+  .advice-box.understand-type { background:var(--mint-light); border-color:rgba(168,213,194,0.5); }
+  .advice-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .advice-badge { font-size:10px; font-weight:700; letter-spacing:1px; padding:3px 10px; border-radius:20px; text-transform:uppercase; }
+  .memory-type .advice-badge { background:rgba(196,181,232,0.4); color:#7a6ab8; }
+  .understand-type .advice-badge { background:rgba(168,213,194,0.4); color:var(--mint-deep); }
+  .advice-header-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .keyword-item {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(196,181,232,0.2); border:1px solid rgba(196,181,232,0.4);
+    border-radius:10px; padding:7px 12px;
+  }
+  .keyword-num { font-size:11px; color:#7a6ab8; font-weight:700; }
+  .keyword-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-note { font-size:11px; color:var(--text-light); margin-top:2px; }
+  .advice-text { font-size:13px; line-height:1.9; color:var(--text); }
+  .advice-text strong { color:var(--mint-deep); }
+  .card-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .mini-card {
+    border-radius:14px; padding:16px 18px;
+    border:1.5px solid rgba(196,181,232,0.3);
+    background:linear-gradient(135deg, var(--lavender-light), #fff);
+  }
+  .mini-card-title { font-size:13px; font-weight:700; color:#7a6ab8; margin-bottom:6px; }
+  .mini-card-desc { font-size:13px; color:var(--text); line-height:1.7; }
+  .mini-card-desc strong { color:#c47a40; }
+  .mini-card-example { font-size:12px; color:var(--text-light); margin-top:4px; }
+  /* ミニクイズ */
+  .mini-quiz {
+    background: linear-gradient(135deg, var(--mint-light), #f0faf5);
+    border: 1.5px solid rgba(168,213,194,0.4);
+    border-radius:16px; padding:20px; margin-bottom:18px;
+  }
+  .mini-quiz-title {
+    font-size:11px; font-weight:700; color:var(--mint-deep); letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:10px; display:flex; align-items:center; gap:6px;
+  }
+  .mini-quiz-title::before { content:'✏️'; font-size:14px; }
+  .mini-quiz-question { font-size:14px; font-weight:700; color:var(--text); line-height:1.7; margin-bottom:14px; }
+  .mini-quiz-options { display:flex; flex-direction:column; gap:8px; }
+  .mini-quiz-options button {
+    display:block; width:100%; padding:11px 16px; border-radius:10px;
+    font-size:13px; font-family:'Zen Maru Gothic',sans-serif; font-weight:500;
+    background:var(--surface); border:1.5px solid rgba(168,213,194,0.3);
+    color:var(--text); cursor:pointer; transition:all 0.2s ease; text-align:left;
+  }
+  .mini-quiz-options button:hover:not(.answered) { border-color:var(--mint); background:rgba(168,213,194,0.1); transform:translateX(3px); }
+  .mini-quiz-options button.quiz-correct { border-color:var(--pink); background:var(--pink-light); color:var(--text); font-weight:700; position:relative; padding-right:40px; }
+  .mini-quiz-options button.quiz-correct::after { content:'◯'; position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:18px; color:var(--pink-deep); font-weight:700; }
+  .mini-quiz-options button.answered:not(.quiz-correct) { opacity:0.45; cursor:default; }
+  .mini-quiz-answer {
+    margin-top:12px; padding:12px 14px; border-radius:10px;
+    background:rgba(168,213,194,0.15); font-size:13px; line-height:1.7; color:var(--text-mid);
+    display:none;
+  }
+  .mini-quiz-answer.show { display:block; animation: floatUp 0.3s ease; }
+  .result-box { text-align:center; padding:14px 0; margin-bottom:18px; }
+  .result-icon { font-size:44px; margin-bottom:8px; display:block; animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .result-title { font-family:'Shippori Mincho',serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+  .result-title.correct { color:var(--mint-deep); }
+  .result-title.wrong { color:var(--pink-deep); }
+  .complete-box { text-align:center; padding:16px 0; }
+  .complete-icon { font-size:56px; margin-bottom:14px; display:block; animation:popIn 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .complete-title { font-family:'Shippori Mincho',serif; font-size:24px; font-weight:700; color:var(--pink-deep); margin-bottom:18px; }
+  .score-detail { display:flex; justify-content:center; gap:24px; margin-bottom:20px; }
+  .score-item { text-align:center; }
+  .score-item-num { font-size:32px; font-weight:700; }
+  .score-item-label { font-size:11px; color:var(--text-light); margin-top:3px; }
+  .complete-message { font-size:13px; color:var(--text-mid); line-height:1.9; margin-bottom:24px; white-space:pre-line; }
+  .btn { width:100%; padding:15px; border:none; border-radius:14px; font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease; letter-spacing:0.3px; }
+  .btn-primary { background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; box-shadow:0 4px 16px rgba(244,167,185,0.4); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+  .btn-secondary { background:var(--surface); color:var(--text-mid); border:1.5px solid rgba(244,167,185,0.3); }
+  .btn-secondary:hover { border-color:var(--pink); color:var(--pink-deep); }
+  .btn-success { background:linear-gradient(135deg, var(--mint), var(--mint-deep)); color:white; box-shadow:0 4px 16px rgba(168,213,194,0.4); }
+  .btn-success:hover { transform:translateY(-2px); }
+  .btn-gold { background:linear-gradient(135deg, var(--peach), #e8904a); color:white; box-shadow:0 4px 16px rgba(247,196,160,0.4); }
+  .btn-gold:hover { transform:translateY(-2px); }
+  .btn-back {
+    display:inline-block; margin-top:14px; padding:6px 10px; border-radius:8px;
+    font-size:11px; font-weight:500; font-family:'Zen Maru Gothic',sans-serif;
+    cursor:pointer; transition:all 0.2s ease; background:transparent; border:none; color:var(--text-light); text-align:left;
+  }
+  .btn-back:hover { color:var(--text-mid); }
+  .hint { text-align:center; font-size:12px; color:var(--text-light); margin-bottom:14px; line-height:1.6; }
+  .hidden { display:none; }
+  @keyframes floatUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  @media (min-width: 768px) {
+    .app { max-width: 720px; }
+    .header h1 { font-size: 27px; }
+    .question-text { font-size: 18px; line-height: 2; padding: 22px 24px; }
+    .choice { font-size: 16px; padding: 16px 20px; }
+    .choice-num { width: 30px; height: 30px; font-size: 13px; }
+    .btn { font-size: 16px; padding: 17px; }
+    .btn-branch-ok { font-size: 16px; padding: 16px; }
+    .explanation-text { font-size: 16px; }
+    .story-text { font-size: 15px; }
+    .story-lead { font-size: 18px; }
+    .advice-text { font-size: 15px; }
+    .keyword-text { font-size: 15px; }
+    .keyword-note { font-size: 13px; }
+    .mini-card-desc { font-size: 14px; }
+    .mini-quiz-question { font-size: 15px; }
+    .mini-quiz-options button { font-size: 14px; }
+    .mini-quiz-answer { font-size: 14px; }
+    .result-title { font-size: 26px; }
+    .complete-title { font-size: 28px; }
+    .hint { font-size: 14px; }
+    .related-toggle { font-size: 14px; }
+    .related-content-inner { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-badge">🌸 生成AIパスポート対策</div>
+    <h1>第4章　情報リテラシー・<br>AI事業者ガイドライン・AI新法</h1>
+    <div class="header-deco"><div class="deco-line"></div><div class="deco-dot"></div><div class="deco-line right"></div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-meta"><span id="progressLabel">20問中1問目</span><span id="progressPct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div class="card" id="step1">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div class="q-num-simple" id="s1-qnum" style="margin-bottom:0;"></div>
+      <div style="font-size:12px; color:var(--text-light);">まず選択肢に目を通してみよう</div>
+    </div>
+    <div class="question-text" id="s1-qtext"></div>
+    <div class="choices" id="s1-choices"></div>
+    <p class="hint">💡 答えは選ばなくてOK</p>
+    <button class="btn btn-primary" onclick="showStep2()">解説を読む →</button>
+  </div>
+  <div class="card hidden" id="step2">
+    <div class="question-text" id="s2-qtext"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">かんたん解説</div>
+      <div class="explanation-text" id="s2-simple"></div>
+    </div>
+    <div id="s2-related"></div>
+    <div class="branch-buttons">
+      <button class="btn-branch-ok" onclick="showStep3()">理解できたので問題を解く →</button>
+      <button class="deepdive-link" onclick="showDeepDive()">🔍 もっと詳しく読む</button>
+    </div>
+    <button class="btn-back" onclick="showScreen('step1')">← 問題に戻る</button>
+  </div>
+  <div class="deepdive-card hidden" id="stepDeepDive">
+    <div id="deepdive-content"></div>
+    <button class="btn btn-primary" onclick="showStep3()">問題を解く →</button>
+    <button class="btn-back" onclick="showScreen('step2')">← かんたん解説に戻る</button>
+  </div>
+  <div class="card hidden" id="step3">
+    <div class="q-num-simple" id="s3-qnum"></div>
+    <div class="question-text" id="s3-qtext"></div>
+    <div class="choices" id="s3-choices"></div>
+    <button class="btn btn-secondary hidden" id="answerBtn" onclick="showResult()">答え合わせをする →</button>
+    <button class="btn-back" onclick="showStep2()">← 解説をもう一度確認する</button>
+  </div>
+  <div class="card hidden" id="step4">
+    <div class="result-box" id="resultBox"></div>
+    <div class="choices" id="s4-choices"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">ポイント</div>
+      <div class="explanation-text" id="s4-summary"></div>
+    </div>
+    <button class="btn btn-success" id="nextBtn" onclick="nextQuestion()">次の問題へ進む →</button>
+  </div>
+  <div class="card hidden" id="stepComplete">
+    <div class="complete-box">
+      <span class="complete-icon">🌸</span>
+      <div class="complete-title">第4章 完了！</div>
+      <div class="score-detail">
+        <div class="score-item"><div class="score-item-num" id="correctCount" style="color:var(--mint-deep)">0</div><div class="score-item-label">正解</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text-light)">／</div><div class="score-item-label">　</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text)">20</div><div class="score-item-label">問</div></div>
+        <div class="score-item"><div class="score-item-num" id="wrongCount" style="color:var(--pink-deep)">0</div><div class="score-item-label">不正解</div></div>
+      </div>
+      <div class="complete-message" id="completeMessage"></div>
+      <button class="btn btn-gold" onclick="restartQuiz()">もう一度チャレンジする 🌸</button>
+    </div>
+  </div>
+</div>
+<script>
+const questions = [
+  // ============================================================
+  // Section 1: インターネットリテラシー（Q1）
+  // ============================================================
+
+  // Q1: インターネットリテラシーの定義
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'インターネットリテラシーに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'インターネットリテラシーとは、プログラミングスキルを身につけることを指す',
+      'インターネットリテラシーとは、インターネットを適切かつ安全に利用するために必要な知識やスキルの総称である',
+      'インターネットリテラシーとは、SNSのフォロワー数を増やすためのマーケティング知識である',
+      'インターネットリテラシーは技術者だけが必要とするスキルであり、一般利用者には不要である'
+    ],
+    correct: 1,
+    simple: `<strong>インターネットリテラシー</strong>とは、インターネットを適切かつ安全に利用するための知識・スキルの総称です。テクノロジーの理解、情報の見極め、セキュリティとプライバシーの管理、そして<strong>デジタル市民権</strong>（ネット社会の一員としての責任ある行動）まで含む、幅広い概念です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「ネットが使える」と「ネットを使いこなせる」は違う</div><div class="story-text">スマホでSNSを見たり検索したりできる。これだけでは「インターネットリテラシーがある」とは言えません。<br><br>たとえば、こんな場面を想像してください。<br><br>・友人から届いたリンク——これはフィッシング詐欺かもしれないと気づけるか？（<strong>セキュリティとプライバシー</strong>）<br>・ネットで見つけた健康情報——信頼できるソースかどうか判断できるか？（<strong>情報リテラシー</strong>）<br>・他人の写真を無断で転載しない——ネット上のルールを理解しているか？（<strong>デジタル市民権</strong>）<br><br>インターネットリテラシーとは、こうした<strong>判断力・知識・行動力を総合的に持っている状態</strong>のこと。技術者だけでなく、ネットを使うすべての人に求められるスキルです。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">5つの要素</span></div><div class="advice-text">インターネットリテラシーは「テクノロジーの理解」「情報リテラシー」「セキュリティとプライバシー」「デジタル市民権」の要素から成り立ちます。単なる操作スキルではなく、<strong>判断力と責任</strong>が含まれる点がポイントです。</div></div>`,
+    summary: `インターネットリテラシーは<strong>適切かつ安全にインターネットを利用するための総合的な知識・スキル</strong>。技術者だけでなく、すべての利用者に必要です。`,
+    related: []
+  },
+
+  // ============================================================
+  // Section 2: セキュリティとプライバシー（Q2〜Q5）
+  // ============================================================
+
+  // Q2: フィッシング詐欺の種類
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'フィッシング詐欺とその派生手法に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'スミッシングとは、電話を使って個人情報を聞き出す詐欺手法である',
+      'ヴィッシングとは、SMSを利用して偽サイトに誘導する詐欺手法である',
+      'フィッシング詐欺は主にメールを使って偽サイトに誘導し、個人情報を盗み取る手法である',
+      'フィッシング詐欺の被害は、アンチウイルスソフトウェアを入れていれば完全に防げる'
+    ],
+    correct: 2,
+    simple: `<strong>フィッシング詐欺</strong>は、銀行やサービスを装った偽メールなどで偽サイトに誘導し、個人情報を盗み取る手法です。<strong>スミッシング</strong>はSMS（ショートメッセージ）を使ったフィッシング、<strong>ヴィッシング</strong>は電話（Voice）を使ったフィッシングです。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① フィッシング詐欺</div><div class="mini-card-desc"><strong>メール</strong>で偽サイトに誘導し、IDやパスワード、クレジットカード情報などを盗む手法。銀行や大手サービスを装った巧妙なメールが典型例。</div><div class="mini-card-example">例：「お客様のアカウントに不正アクセスがありました」→偽ログインページへ</div></div><div class="mini-card"><div class="mini-card-title">② スミッシング（Smishing）</div><div class="mini-card-desc"><strong>SMS（ショートメッセージ）</strong>を使ったフィッシング。「SMS + Phishing」の造語。スマホに届く短いメッセージ内のリンクから偽サイトに誘導します。</div><div class="mini-card-example">例：「お荷物の配達に失敗しました。こちらから再配達を→」</div></div><div class="mini-card"><div class="mini-card-title">③ ヴィッシング（Vishing）</div><div class="mini-card-desc"><strong>電話（Voice）</strong>を使ったフィッシング。「Voice + Phishing」の造語。電話口で銀行員やサポートを装い、口頭で個人情報を聞き出します。</div><div class="mini-card-example">例：「銀行のセキュリティ部門です。確認のため暗証番号を教えてください」</div></div></div><div class="mini-quiz" data-quiz="q2"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">SMSで届いた偽リンクから個人情報を盗む手法は？</div><div class="mini-quiz-options"><button data-correct="false">ヴィッシング</button><button data-correct="true">スミッシング</button><button data-correct="false">フィッシング</button></div><div class="mini-quiz-answer">スミッシング（SMS + Phishing）です。電話はヴィッシング、メールはフィッシングです。</div></div>`,
+    summary: `フィッシング＝<strong>メール</strong>、スミッシング＝<strong>SMS</strong>、ヴィッシング＝<strong>電話</strong>。媒体の違いで名前が変わる点がポイントです。`,
+    related: []
+  },
+
+  // Q3: マルウェア・ランサムウェア
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'マルウェアに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'マルウェアとは、悪意のある目的で作られたソフトウェアの総称である',
+      'ランサムウェアとは、個人情報を収集してクラウドストレージに保存するソフトウェアである',
+      'アンチウイルスソフトウェアを導入すれば、すべてのマルウェアを完全に防ぐことができる',
+      'マルウェアはパソコンにのみ感染し、スマートフォンには影響しない'
+    ],
+    correct: 0,
+    simple: `<strong>マルウェア</strong>は、悪意のある目的で作られたソフトウェアの総称です。その中でも<strong>ランサムウェア</strong>は、データを暗号化して「身代金（Ransom）」を要求する特に悪質なタイプ。アンチウイルスソフトウェアは重要な対策ですが、すべてを完全に防げるわけではありません。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① マルウェア（Malware）</div><div class="mini-card-desc"><strong>悪意のあるソフトウェアの総称</strong>。「Malicious（悪意のある）+ Software」の造語。ウイルス、ワーム、トロイの木馬、ランサムウェアなど、さまざまな種類を含む上位概念です。</div><div class="mini-card-example">ポイント：マルウェア＝「悪いソフト全般」の総称</div></div><div class="mini-card"><div class="mini-card-title">② ランサムウェア（Ransomware）</div><div class="mini-card-desc">感染するとデータを<strong>暗号化してロック</strong>し、解除と引き換えに<strong>身代金（Ransom）</strong>を要求するマルウェア。企業が業務停止に追い込まれる深刻な被害が増加しています。</div><div class="mini-card-example">例：「ファイルを暗号化しました。復旧には〇〇万円を支払ってください」</div></div><div class="mini-card"><div class="mini-card-title">③ アンチウイルスソフトウェア</div><div class="mini-card-desc">マルウェアの検出・駆除を行うソフトウェア。重要な対策ですが、<strong>新種のマルウェアには対応が追いつかない</strong>場合もあり、完全な防御は不可能。複数の対策を組み合わせることが重要です。</div><div class="mini-card-example">ポイント：「完全に防げる」は試験の引っかけ選択肢</div></div></div><div class="mini-quiz" data-quiz="q3"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">データを暗号化して身代金を要求するマルウェアは？</div><div class="mini-quiz-options"><button data-correct="false">マルウェア</button><button data-correct="true">ランサムウェア</button><button data-correct="false">アンチウイルスソフトウェア</button></div><div class="mini-quiz-answer">ランサムウェア（Ransom＝身代金）です。マルウェアは「悪意あるソフトの総称」なので、もっと広い概念です。</div></div>`,
+    summary: `マルウェアは<strong>悪意あるソフトの総称</strong>、ランサムウェアはその一種で<strong>身代金を要求</strong>。「完全に防げる」は引っかけです。`,
+    related: []
+  },
+
+  // Q4: ソーシャルエンジニアリング攻撃 ★不適切★
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'ソーシャルエンジニアリング攻撃に関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'スピアフィッシングとは、特定の個人や組織を狙って巧妙にカスタマイズされた詐欺攻撃である',
+      'ベイト攻撃とは、USBメモリなどの「餌（Bait）」を使って標的にマルウェアを仕込む手法である',
+      'プレテキストとは、偽の口実（Pretext）を使って信頼を得てから情報を引き出す手法である',
+      'ブラックメールとは、技術的な脆弱性を突いてシステムに侵入するハッキング手法である'
+    ],
+    correct: 3,
+    simple: `<strong>ソーシャルエンジニアリング攻撃</strong>は、技術ではなく<strong>人間の心理的な隙を突く</strong>攻撃手法の総称です。ブラックメールは「脅迫によって情報や金銭を要求する」手法であり、システムへのハッキングとは異なります。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① スピアフィッシング</div><div class="mini-card-desc"><strong>特定の人物・組織を狙い撃ち</strong>にするフィッシング攻撃。「Spear（槍）」のように、ターゲットを絞って巧妙にカスタマイズされたメールなどを送ります。</div><div class="mini-card-example">例：「〇〇部長、先日の会議資料を添付します」→偽装メール</div></div><div class="mini-card"><div class="mini-card-title">② ベイト攻撃</div><div class="mini-card-desc"><strong>餌（Bait）</strong>を使って標的を誘い込む手法。マルウェア入りのUSBメモリをオフィス付近に置いたり、無料ソフトを装ってマルウェアをダウンロードさせたりします。</div><div class="mini-card-example">例：「社員名簿」とラベルが貼られたUSBメモリが駐車場に落ちている</div></div><div class="mini-card"><div class="mini-card-title">③ ブラックメール</div><div class="mini-card-desc"><strong>脅迫</strong>によって情報や金銭を要求する手法。個人の秘密やデータ漏洩を盾に「公開されたくなければ〇〇しろ」と脅します。技術的なハッキングではなく<strong>心理的な攻撃</strong>です。</div><div class="mini-card-example">例：「あなたの個人情報を入手した。公開されたくなければ送金を」</div></div><div class="mini-card"><div class="mini-card-title">④ プレテキスト</div><div class="mini-card-desc"><strong>偽の口実（Pretext）</strong>を作り上げ、信頼を獲得してから情報を引き出す手法。「IT部門です」「取引先の者です」など、もっともらしい立場を装います。</div><div class="mini-card-example">例：「社内システムの点検中です。パスワードを教えてください」</div></div></div><div class="mini-quiz" data-quiz="q4"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">「IT部門を装ってパスワードを聞き出す」のはどの手法？</div><div class="mini-quiz-options"><button data-correct="false">スピアフィッシング</button><button data-correct="false">ベイト攻撃</button><button data-correct="true">プレテキスト</button></div><div class="mini-quiz-answer">プレテキスト（Pretext＝口実）です。偽の立場を装って信頼を得る手法です。</div></div>`,
+    summary: `ブラックメールは<strong>脅迫による心理的攻撃</strong>であり、技術的なハッキングではありません。ソーシャルエンジニアリング攻撃はすべて<strong>人間の心理を突く</strong>手法です。`,
+    related: [{ qIndex: 1, keyword: 'フィッシング詐欺' }]
+  },
+
+  // Q5: 生成AIの技術的発展に潜む脅威
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '生成AIの技術的発展に伴うセキュリティ上の脅威に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '生成AIの発展により、フィッシング詐欺のメール文面がより自然で巧妙になるリスクが指摘されている',
+      '生成AIは悪用される可能性がないため、セキュリティ対策に変更は不要である',
+      '生成AIが作成したコンテンツは必ず識別できるため、偽情報の問題は発生しない',
+      '生成AIの脅威はテキストに限定されており、画像や音声の偽造には使えない'
+    ],
+    correct: 0,
+    simple: `生成AIの技術が進化したことで、<strong>フィッシング詐欺のメールがより自然な文面</strong>になったり、<strong>ディープフェイクで本人そっくりの音声や映像</strong>が作れるようになったりと、セキュリティ上の新たな脅威が生まれています。テキストだけでなく、画像・音声・動画すべてが対象です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">詐欺師の「武器」がアップグレードされた</div><div class="story-text">以前のフィッシングメールは、不自然な日本語やおかしな敬語ですぐに見抜けることも多かったはずです。<br><br>ところが生成AIを使えば、<strong>完璧な日本語の詐欺メール</strong>が一瞬で大量に作れます。それだけではありません。<br><br>・<strong>音声のディープフェイク</strong>で上司の声を再現し、「至急振り込んで」と電話する<br>・<strong>動画のディープフェイク</strong>で有名人が商品を推薦する偽広告を作る<br>・<strong>偽のニュース記事</strong>を大量生成して、世論を操作しようとする<br><br>つまり、生成AIの進化は便利さだけでなく、<strong>攻撃者の能力も同時に引き上げた</strong>のです。「AIが作ったコンテンツは必ず見抜ける」と思い込むのは危険です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">第3章との繋がり</span></div><div class="advice-text">第3章で学んだ<strong>ディープフェイク</strong>がここでも登場。技術そのものは第3章、その<strong>セキュリティ上のリスク</strong>が第4章のテーマです。</div></div>`,
+    summary: `生成AIの進化により、<strong>詐欺メールの巧妙化・ディープフェイクによる偽造</strong>など、セキュリティ上の脅威が拡大。テキスト・画像・音声・動画すべてが対象です。`,
+    related: []
+  },
+
+  // ============================================================
+  // Section 3: 個人情報保護の観点（Q6〜Q9）
+  // ============================================================
+
+  // Q6: 個人情報保護法の基本
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '個人情報保護法に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '個人情報保護法は、個人情報を取り扱う事業者に対して適切な管理を義務づける法律である',
+      '個人情報保護法の監督は各企業の自主的な取り組みに委ねられており、監督機関は存在しない',
+      '個人情報保護法は大企業のみに適用され、中小企業や個人事業主は対象外である',
+      '個人情報保護法では、本人の同意があっても個人情報の第三者提供は一切禁止されている'
+    ],
+    correct: 0,
+    simple: `<strong>個人情報保護法</strong>は、個人情報を取り扱う事業者（<strong>個人情報取扱事業者</strong>）に対して、適切な管理を義務づける法律です。監督機関として<strong>個人情報保護委員会</strong>が設置されており、企業規模にかかわらず適用されます。`,
+    deepdive: `<div class="story-block"><div class="story-lead">お客様の名簿を預かったお店の責任</div><div class="story-text">街の小さなパン屋さんがポイントカードを始めたとします。お客様の名前・住所・電話番号を集めますよね。<br><br>この時点で、このパン屋さんは<strong>個人情報取扱事業者</strong>になります。大企業だけの話ではありません。<br><br>個人情報保護法が求めているのは、こうした情報を預かる事業者に対して「きちんと管理してください」ということ。具体的には：<br><br>・利用目的を明確にして本人に伝える<br>・目的外の利用をしない<br>・漏洩しないよう安全管理を行う<br>・本人から開示や削除を求められたら対応する<br><br>そして、これらが守られているかを監視するのが<strong>個人情報保護委員会</strong>という国の機関です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">試験での引っかけパターン</span></div><div class="advice-text">「大企業のみ適用」「監督機関なし」「第三者提供は一切禁止」はすべて誤り。<strong>規模を問わず適用</strong>・<strong>個人情報保護委員会が監督</strong>・<strong>本人同意があれば第三者提供可能</strong>が正しい理解です。</div></div>`,
+    summary: `個人情報保護法は<strong>規模を問わずすべての事業者に適用</strong>され、<strong>個人情報保護委員会</strong>が監督します。`,
+    related: []
+  },
+
+  // Q7: 要配慮個人情報 vs 機微情報
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '要配慮個人情報と機微（センシティブ）情報に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '要配慮個人情報と機微（センシティブ）情報はまったく同じ概念であり、違いはない',
+      '要配慮個人情報とは、本人に対する不当な差別や偏見が生じないよう特に配慮が必要な個人情報である',
+      '機微（センシティブ）情報は個人情報保護法で定義された法律用語である',
+      '要配慮個人情報には、氏名や住所などの基本的な個人情報が含まれる'
+    ],
+    correct: 1,
+    simple: `<strong>要配慮個人情報</strong>は、人種・信条・病歴・犯罪歴など、<strong>不当な差別や偏見が生じないよう特に配慮が必要</strong>な個人情報で、個人情報保護法に定義されています。<strong>機微（センシティブ）情報</strong>は金融分野などの業界ガイドラインで使われる用語で、要配慮個人情報と重なる部分はありますが、別の概念です。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">要配慮個人情報</div><div class="mini-card-desc">個人情報保護法で定義された<strong>法律用語</strong>。本人に対する不当な差別・偏見が生じないよう、<strong>取得には原則として本人の同意が必要</strong>とされる情報。</div><div class="mini-card-example">例：人種、信条、病歴、犯罪歴、障害、健康診断結果</div></div><div class="mini-card"><div class="mini-card-title">機微（センシティブ）情報</div><div class="mini-card-desc">金融分野などの<strong>業界ガイドライン</strong>で使われる用語。法律上の定義ではなく、業界独自に「特に慎重に扱うべき」と定められた情報を指します。</div><div class="mini-card-example">例：労働組合への加盟、性生活、政治的見解など（業界により範囲が異なる）</div></div></div><div class="mini-quiz" data-quiz="q7"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">個人情報保護法で定義されているのはどちら？</div><div class="mini-quiz-options"><button data-correct="true">要配慮個人情報</button><button data-correct="false">機微（センシティブ）情報</button></div><div class="mini-quiz-answer">要配慮個人情報です。機微情報は業界ガイドラインの用語で、法律上の定義ではありません。</div></div>`,
+    summary: `要配慮個人情報は<strong>個人情報保護法の法律用語</strong>、機微情報は<strong>業界ガイドラインの用語</strong>。似ているが別概念です。`,
+    related: [{ qIndex: 5, keyword: '個人情報保護法' }]
+  },
+
+  // Q8: 匿名加工情報・マスキング
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '匿名加工情報とマスキングに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '匿名加工情報とは、特定の個人を識別できないように加工した情報であり、一定のルールのもとで本人の同意なく第三者に提供できる',
+      'マスキングとは、個人情報をすべて削除して完全に消去する処理のことである',
+      '匿名加工情報は元の個人情報に完全に復元できることが条件とされている',
+      '匿名加工情報とマスキングはまったく同じ処理を指す用語である'
+    ],
+    correct: 0,
+    simple: `<strong>匿名加工情報</strong>とは、特定の個人を識別できないように加工した情報のことです。個人情報保護法のルールに従えば、<strong>本人の同意なく第三者に提供</strong>できます。<strong>マスキング</strong>は氏名や住所などの一部を「***」などで隠す処理で、匿名加工の手法のひとつです。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">匿名加工情報</div><div class="mini-card-desc">個人情報を<strong>特定の個人を識別できない状態</strong>に加工したもの。元に戻せないことが前提で、個人情報保護法の規定に従えば<strong>本人同意なしで第三者提供が可能</strong>。データの利活用を促進する仕組みです。</div><div class="mini-card-example">例：購買データから氏名・住所を削除し、年齢を「30代」に丸める</div></div><div class="mini-card"><div class="mini-card-title">マスキング</div><div class="mini-card-desc">個人情報の一部を<strong>伏せ字や記号で隠す</strong>処理。データ自体は削除せず、見えないようにするだけ。匿名加工の手法のひとつとして使われることがあります。</div><div class="mini-card-example">例：田中太郎 → 田***、03-1234-5678 → 03-****-5678</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">区別のコツ</span></div><div class="advice-text"><strong>匿名加工情報</strong>＝「誰かわからない状態にする」仕組み（法律上の概念）<br><strong>マスキング</strong>＝「一部を隠す」具体的な技術（手法のひとつ）<br>関係は「目的と手段」です。</div></div>`,
+    summary: `匿名加工情報は<strong>個人を識別できない状態に加工</strong>したもので、ルールに従えば同意なく第三者提供可能。マスキングは<strong>一部を隠す具体的な手法</strong>です。`,
+    related: [{ qIndex: 5, keyword: '個人情報保護法' }]
+  },
+
+  // Q9: 生成AIと個人情報の取り扱い ★不適切★
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '生成AIの活用における個人情報の取り扱いに関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      '生成AIに個人情報を入力すると、その情報がAIの学習データに取り込まれるリスクがある',
+      '生成AIを業務で利用する際は、個人情報を含むデータの入力に注意が必要である',
+      '生成AIサービスに入力した個人情報は自動的に匿名加工されるため、情報漏洩のリスクはない',
+      '個人情報を生成AIに入力する場合は、利用規約やプライバシーポリシーを確認することが重要である'
+    ],
+    correct: 2,
+    simple: `生成AIに個人情報を入力すると、その情報が<strong>学習データに取り込まれたり、他のユーザーへの回答に反映されたりするリスク</strong>があります。「自動的に匿名加工される」というのは誤りで、サービスによって扱いは異なります。利用規約の確認が重要です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">AIに話したことは「忘れてもらえる」とは限らない</div><div class="story-text">友人に秘密を話したら、その友人が別の場所で何気なく口にしてしまった——。生成AIでも似たことが起きる可能性があります。<br><br>たとえば、業務効率化のために顧客リストをそのままChatGPTに貼り付けて分析を依頼したとします。<br><br>この時、入力されたデータがAIの学習データに使われる設定になっていたら？ 他のユーザーへの回答に、その情報の一部が反映される可能性もゼロではありません。<br><br>「AIが自動的に匿名化してくれる」と思い込むのは危険です。匿名加工には厳密な手続きが必要で、AIが勝手にやってくれるものではありません。<br><br>業務で生成AIを使う際は：<br>・<strong>個人情報をそのまま入力しない</strong><br>・<strong>サービスの利用規約でデータの取り扱いを確認する</strong><br>・<strong>機密情報はオプトアウト設定や社内ルールに従う</strong><br><br>これらが基本です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">試験で狙われるポイント</span></div><div class="advice-text">「自動的に〇〇される」「リスクはない」「完全に安全」のような<strong>断定表現は要注意</strong>。生成AIと個人情報の問題では、リスクがゼロにならないことを理解しているかが問われます。</div></div>`,
+    summary: `生成AIに入力した情報が<strong>自動的に匿名加工されることはありません</strong>。学習データへの取り込みリスクがあるため、利用規約の確認と入力内容への注意が重要です。`,
+    related: [{ qIndex: 7, keyword: '匿名加工情報' }]
+  },
+
+  // ============================================================
+  // Section 4: 制作物に関わる権利（Q10〜Q15）
+  // ============================================================
+
+  // Q10: 知的財産権の全体像
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '知的財産権に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '著作権は発明を保護する権利であり、特許庁への出願が必要である',
+      '商標権は商品やサービスに使用するマーク・名称などを保護する権利である',
+      '意匠権は文学・音楽・美術などの創作物を保護する権利である',
+      '特許権はデザインの外観を保護する権利であり、登録なしで自動的に発生する'
+    ],
+    correct: 1,
+    simple: `<strong>知的財産権</strong>にはさまざまな種類があります。<strong>著作権</strong>は文学・音楽・美術などの創作物、<strong>特許権</strong>は発明、<strong>商標権</strong>は商品やサービスのマーク・名称、<strong>意匠権</strong>はデザインの外観を保護します。試験では定義の入れ替えが頻出です。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">著作権</div><div class="mini-card-desc"><strong>文学・音楽・美術・プログラム</strong>などの創作物を保護。創作した時点で<strong>自動的に発生</strong>し、登録は不要。</div><div class="mini-card-example">例：小説、楽曲、イラスト、ソフトウェアのコード</div></div><div class="mini-card"><div class="mini-card-title">特許権</div><div class="mini-card-desc"><strong>発明（技術的なアイデア）</strong>を保護。<strong>特許庁への出願・審査</strong>が必要。新規性・進歩性などの要件を満たす必要があります。</div><div class="mini-card-example">例：新しい製造方法、医薬品の有効成分、通信技術</div></div><div class="mini-card"><div class="mini-card-title">商標権</div><div class="mini-card-desc"><strong>商品・サービスのマークや名称</strong>を保護。ブランドの信用を守る権利で、<strong>登録が必要</strong>。</div><div class="mini-card-example">例：企業のロゴ、商品名、サービス名</div></div><div class="mini-card"><div class="mini-card-title">意匠権</div><div class="mini-card-desc"><strong>工業製品のデザイン（外観）</strong>を保護。形状・模様・色彩などが対象で、<strong>登録が必要</strong>。</div><div class="mini-card-example">例：スマートフォンの形状デザイン、家具のフォルム</div></div></div><div class="mini-quiz" data-quiz="q10"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">登録なしで、創作した時点で自動的に発生する権利は？</div><div class="mini-quiz-options"><button data-correct="false">特許権</button><button data-correct="true">著作権</button><button data-correct="false">意匠権</button></div><div class="mini-quiz-answer">著作権です。特許権・商標権・意匠権はいずれも登録が必要です。</div></div>`,
+    summary: `著作権＝<strong>創作物（自動発生）</strong>、特許権＝<strong>発明（出願必要）</strong>、商標権＝<strong>マーク・名称（登録必要）</strong>、意匠権＝<strong>デザイン外観（登録必要）</strong>。定義の入れ替えに注意。`,
+    related: []
+  },
+
+  // Q11: 著作権とAI学習
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '生成AIと著作権に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'AIが学習のために著作物を利用することは、日本の著作権法上、一定の条件のもとで認められている',
+      'AIが生成したコンテンツが既存の著作物に似ていても、AIが生成したものであれば著作権侵害にはならない',
+      '著作権で保護されたデータをAIの学習に使用することは、いかなる場合も違法である',
+      'AI生成物はすべて自動的に著作権で保護される'
+    ],
+    correct: 0,
+    simple: `日本の著作権法では、AIが学習のために著作物を利用することは<strong>一定の条件のもとで認められて</strong>います。ただし、AI生成物が既存の著作物に類似している場合は<strong>著作権侵害になる可能性</strong>があります。また、AI生成物が自動的に著作権で保護されるわけではなく、<strong>人間の創作的関与</strong>が必要とされています。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「AIが学んだ」と「AIがマネした」は別の問題</div><div class="story-text">画家が美術館でたくさんの名画を鑑賞して技法を学ぶことは問題ありませんよね。しかし、学んだ結果として他人の絵にそっくりな作品を描いて販売したら？ それは問題になりえます。<br><br>AIでも同じ構図です。<br><br><strong>学習段階</strong>：日本の著作権法（第30条の4）では、AIが著作物を学習に使うことは「著作物に表現された思想・感情の享受を目的としない利用」として、一定の条件のもとで認められています。<br><br><strong>生成段階</strong>：しかし、AIが生成した画像や文章が既存の著作物に酷似していた場合、<strong>その出力は著作権侵害になる可能性</strong>があります。「AIが作ったから許される」わけではありません。<br><br><strong>AI生成物の権利</strong>：AIが自律的に生成したものには著作権は発生しないとされています。著作権が発生するには、<strong>人間による創作的な関与</strong>（プロンプトの工夫や加筆修正など）が必要です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">3つの段階で整理</span></div><div class="advice-text"><strong>①学習</strong>＝一定条件で合法<br><strong>②生成物の侵害</strong>＝既存作品に似ていれば侵害の可能性あり<br><strong>③生成物の権利</strong>＝人間の創作的関与がなければ著作権なし</div></div>`,
+    summary: `AI学習での著作物利用は<strong>一定条件で認められる</strong>が、生成物が既存作品に似ていれば<strong>侵害の可能性あり</strong>。AI生成物には<strong>人間の創作的関与</strong>がなければ著作権は発生しません。`,
+    related: [{ qIndex: 9, keyword: '知的財産権' }]
+  },
+
+  // Q12: 肖像権・パブリシティ権
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '肖像権とパブリシティ権に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '肖像権とは、自分の顔や姿を無断で撮影・公開されない権利である',
+      'パブリシティ権はすべての人に等しく認められる権利であり、著名人に限定されない',
+      '肖像権は著名人にのみ認められ、一般人には適用されない',
+      '生成AIで作成した有名人の画像は、本人の同意がなくても自由に商用利用できる'
+    ],
+    correct: 0,
+    simple: `<strong>肖像権</strong>は、自分の顔や姿を無断で撮影・公開されない権利で、<strong>すべての人</strong>に認められます。<strong>パブリシティ権</strong>は、著名人の氏名や肖像が持つ<strong>経済的な価値</strong>を保護する権利で、主に有名人・芸能人に認められます。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">肖像権</div><div class="mini-card-desc">自分の顔や姿を<strong>無断で撮影・公開されない権利</strong>。すべての人に認められるプライバシーに関わる権利です。法律に明文化されていませんが、判例で確立されています。</div><div class="mini-card-example">例：街で撮った写真に知らない人が写っている→無断でSNSに投稿すると肖像権の侵害になりうる</div></div><div class="mini-card"><div class="mini-card-title">パブリシティ権</div><div class="mini-card-desc">著名人の氏名・肖像が持つ<strong>経済的な価値（顧客吸引力）</strong>を保護する権利。芸能人やスポーツ選手など、知名度による商業的価値がある人に認められます。</div><div class="mini-card-example">例：有名人の写真を無断で広告に使用→パブリシティ権の侵害</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">区別のコツ</span></div><div class="advice-text"><strong>肖像権</strong>＝プライバシー保護（<strong>すべての人</strong>）<br><strong>パブリシティ権</strong>＝経済的価値の保護（<strong>主に著名人</strong>）<br>生成AIで有名人の画像を作成し商用利用すれば、<strong>両方の権利を侵害する可能性</strong>があります。</div></div>`,
+    summary: `肖像権＝<strong>すべての人のプライバシー保護</strong>、パブリシティ権＝<strong>著名人の経済的価値の保護</strong>。対象者の範囲が違う点がポイントです。`,
+    related: []
+  },
+
+  // Q13: 不正競争防止法
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '不正競争防止法に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '営業秘密として保護されるには、秘密管理性・有用性・非公知性の3要件を満たす必要がある',
+      '限定提供データとは、企業が社内で自由に閲覧できる一般的な業務データのことである',
+      '不正競争防止法は著作権を保護するための法律である',
+      '営業秘密は公開された情報でも、企業にとって重要であれば保護の対象となる'
+    ],
+    correct: 0,
+    simple: `<strong>不正競争防止法</strong>は、企業間の公正な競争を守るための法律です。<strong>営業秘密</strong>として保護されるには「<strong>秘密管理性</strong>（秘密として管理されている）」「<strong>有用性</strong>（事業に役立つ）」「<strong>非公知性</strong>（公に知られていない）」の3要件が必要です。<strong>限定提供データ</strong>は、特定の相手に限定して提供されるデータを保護する仕組みです。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">営業秘密</div><div class="mini-card-desc">企業の持つ秘密情報で、不正競争防止法で保護されるもの。<strong>3要件すべて</strong>を満たす必要があります。</div><div class="mini-card-example">3要件：①秘密管理性（鍵付きで管理）②有用性（事業に有益）③非公知性（一般に知られていない）</div></div><div class="mini-card"><div class="mini-card-title">限定提供データ</div><div class="mini-card-desc"><strong>特定の相手に限定して提供</strong>されるデータを保護する仕組み。ビッグデータの流通促進を目的に2019年の改正で追加されました。営業秘密ほど厳格な秘密管理は不要ですが、「誰にでも公開」ではないことが条件。</div><div class="mini-card-example">例：気象データ、POSデータなどを契約先に限定して提供</div></div></div><div class="mini-quiz" data-quiz="q13"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">営業秘密の3要件に含まれないのは？</div><div class="mini-quiz-options"><button data-correct="false">秘密管理性</button><button data-correct="true">公開性</button><button data-correct="false">有用性</button></div><div class="mini-quiz-answer">「公開性」は含まれません。正しくは「非公知性」（公に知られていないこと）です。公開されている情報は営業秘密になりません。</div></div>`,
+    summary: `営業秘密の3要件は<strong>秘密管理性・有用性・非公知性</strong>。限定提供データは<strong>特定の相手に限定して提供されるデータ</strong>の保護制度です。`,
+    related: [{ qIndex: 9, keyword: '知的財産権' }]
+  },
+
+  // Q14: AI生成物の権利と責任 ★不適切★
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'AI生成物の権利と責任に関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'AI生成物が既存の著作物に類似している場合、著作権侵害となる可能性がある',
+      'AI生成物を利用して他者の名誉を毀損した場合、利用者が法的責任を問われる可能性がある',
+      'AIが自律的に生成したコンテンツには、自動的にAI開発者の著作権が発生する',
+      'AI生成物を公開・利用する際は、既存の権利を侵害していないか事前に確認する必要がある'
+    ],
+    correct: 2,
+    simple: `AIが自律的に生成したコンテンツに<strong>自動的に著作権が発生するわけではありません</strong>。著作権は人間の創作的な表現を保護するものであり、AI開発者にも利用者にも自動的には帰属しません。一方、AI生成物による<strong>著作権侵害や名誉毀損の責任は利用者が負う可能性</strong>があります。`,
+    deepdive: `<div class="story-block"><div class="story-lead">AIが描いた絵は「誰のもの」か</div><div class="story-text">AIに「夕焼けの海の絵を描いて」と指示して生成された画像。この絵の著作権は誰にあるのでしょうか。<br><br><strong>AI自身</strong>？ →法的にAIは権利の主体になれません。<br><strong>AI開発者</strong>？ →開発者が直接その絵を「創作」したわけではありません。<br><strong>利用者</strong>？ →プロンプトを打っただけでは「創作的関与」が不十分とされる可能性があります。<br><br>つまり、AIが自律的に生成したコンテンツには<strong>著作権が発生しない</strong>という考え方が現在の主流です。<br><br>一方で、<strong>責任の所在</strong>ははっきりしています。AI生成物が既存の著作物にそっくりだった場合、それを公開・販売した<strong>利用者が侵害の責任を問われます</strong>。「AIが勝手に作った」は免責の理由になりません。<br><br>権利は不明確でも、<strong>責任は利用者にある</strong>——この非対称性が試験で問われるポイントです。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">権利と責任の非対称性</span></div><div class="advice-text"><strong>権利</strong>：AI生成物には自動的に著作権は発生しない<br><strong>責任</strong>：侵害や名誉毀損があれば利用者が責任を負う<br>「権利はないが、責任はある」と覚えましょう。</div></div>`,
+    summary: `AI生成物に<strong>自動的に著作権は発生しません</strong>。ただし、既存作品への侵害や名誉毀損の<strong>責任は利用者が負う</strong>可能性があります。`,
+    related: [{ qIndex: 10, keyword: '著作権とAI学習' }]
+  },
+
+  // Q15: 制作物の権利 章内総合
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: '生成AIの活用における権利保護に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '生成AIで作成した画像を商用利用する場合、既存の著作物・肖像権・パブリシティ権などを侵害していないか確認する必要がある',
+      '生成AIで作成したコンテンツはすべてオリジナルであるため、権利侵害のリスクはない',
+      '不正競争防止法は物理的な製品のみを対象としており、AI生成物には適用されない',
+      '生成AIを使えば、他社の営業秘密を合法的に推測・再現することができる'
+    ],
+    correct: 0,
+    simple: `生成AIで作成したコンテンツを商用利用する際は、<strong>著作権・肖像権・パブリシティ権・不正競争防止法</strong>など、複数の権利を侵害していないか確認が必要です。「AIが作ったからオリジナル」「権利侵害のリスクはない」という考えは誤りです。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「AI任せ」で安心してはいけない</div><div class="story-text">あなたが生成AIを使って新商品のプロモーション画像を作ったとします。確認すべき権利は一つではありません。<br><br><strong>著作権</strong>：生成された画像が既存のイラストや写真に酷似していないか？<br><strong>肖像権</strong>：実在する人物に似た顔が生成されていないか？<br><strong>パブリシティ権</strong>：有名人の特徴を模した画像を広告に使っていないか？<br><strong>不正競争防止法</strong>：競合他社のブランドやデザインに酷似していないか？<br><br>生成AIは「何から学習して、何を参考に生成したか」がブラックボックスです。だからこそ、<strong>出力結果を人間が多角的にチェック</strong>する必要があります。<br><br>ここまでのQ10〜Q14で学んだ個別の権利が、実際のビジネスシーンでは<strong>同時に絡み合う</strong>ことを意識しましょう。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">チェックリストとして覚える</span></div><div class="advice-text">AI生成物の商用利用前に確認すべき権利：<br>✓ <strong>著作権</strong>（既存作品との類似）<br>✓ <strong>肖像権</strong>（実在人物との類似）<br>✓ <strong>パブリシティ権</strong>（著名人の経済的価値）<br>✓ <strong>不正競争防止法</strong>（他社のブランド・秘密）</div></div>`,
+    summary: `AI生成物の商用利用では<strong>著作権・肖像権・パブリシティ権・不正競争防止法</strong>の複数の観点からチェックが必要。「AIが作った＝安全」ではありません。`,
+    related: [{ qIndex: 9, keyword: '知的財産権' }, { qIndex: 11, keyword: '肖像権・パブリシティ権' }]
+  },
+
+  // ============================================================
+  // Section 5: AI社会原則・ガイドライン（Q16〜Q18）
+  // ============================================================
+
+  // Q16: AI社会の3理念
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'AI社会の基本理念に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'AI社会の基本理念のひとつに「人間の尊厳が尊重される社会（Dignity）」がある',
+      'AI社会の基本理念は「効率性」と「経済成長」の2つで構成されている',
+      '「Diversity & Inclusion」とは、AI技術の多様な開発手法を意味する理念である',
+      '「Sustainability」とは、AIの処理速度を持続的に向上させることを意味する'
+    ],
+    correct: 0,
+    simple: `AI社会の基本理念は3つです。<strong>①人間の尊厳が尊重される社会（Dignity）</strong>、<strong>②多様な背景を持つ人々が多様な幸せを追求できる社会（Diversity & Inclusion）</strong>、<strong>③持続可能な社会（Sustainability）</strong>。技術の効率性ではなく、人間と社会のあり方を示した理念です。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① Dignity（人間の尊厳）</div><div class="mini-card-desc"><strong>人間の尊厳が尊重される社会</strong>。AIが発展しても、人間が道具のように扱われたり、AIに支配されたりすることがあってはならないという理念。</div><div class="mini-card-example">核心：AIはあくまで人間のための技術</div></div><div class="mini-card"><div class="mini-card-title">② Diversity & Inclusion（多様性と包摂）</div><div class="mini-card-desc"><strong>多様な背景を持つ人々が多様な幸せを追求できる社会</strong>。年齢・性別・障害・文化などにかかわらず、誰もがAIの恩恵を受けられることを目指す理念。</div><div class="mini-card-example">核心：AIが特定の人だけでなく、すべての人のために</div></div><div class="mini-card"><div class="mini-card-title">③ Sustainability（持続可能性）</div><div class="mini-card-desc"><strong>持続可能な社会</strong>。AIの発展が環境負荷を増大させたり、社会の格差を拡大させたりせず、長期的に持続できることを目指す理念。</div><div class="mini-card-example">核心：AIの発展と社会・環境の調和</div></div></div><div class="mini-quiz" data-quiz="q16"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">「多様な背景を持つ人々が多様な幸せを追求できる社会」を表す理念は？</div><div class="mini-quiz-options"><button data-correct="false">Dignity</button><button data-correct="true">Diversity & Inclusion</button><button data-correct="false">Sustainability</button></div><div class="mini-quiz-answer">Diversity & Inclusion（多様性と包摂）です。Dignityは「人間の尊厳」、Sustainabilityは「持続可能性」です。</div></div>`,
+    summary: `AI社会の3理念：<strong>Dignity（人間の尊厳）・Diversity & Inclusion（多様性と包摂）・Sustainability（持続可能性）</strong>。英語名と内容の対応を正確に覚えましょう。`,
+    related: []
+  },
+
+  // Q17: AI社会原則・共通の指針 ★不適切★
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'AI社会原則および高度なAIシステムに関係する事業者に共通の指針に関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      '共通の指針には「人間中心」「安全性」「公平性」「透明性」「アカウンタビリティ」などが含まれる',
+      '共通の指針では、AIの開発・提供において「教育・リテラシー」の向上も重視されている',
+      '共通の指針では、AI事業者は利益を最大化することが最優先とされている',
+      '共通の指針には「プライバシー保護」「セキュリティ確保」「公正競争確保」「イノベーション」も含まれる'
+    ],
+    correct: 2,
+    simple: `高度なAIシステムに関わる事業者の共通の指針には、<strong>人間中心・安全性・公平性・プライバシー保護・セキュリティ確保・透明性・アカウンタビリティ・教育リテラシー・公正競争確保・イノベーション</strong>が含まれます。「利益の最大化が最優先」ではなく、<strong>社会全体の利益と安全</strong>を重視しています。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">人間に関わる原則</div><div class="mini-card-desc"><strong>人間中心</strong>：AIは人間のために存在する<br><strong>教育・リテラシー</strong>：AIを正しく理解し使う力を育てる</div><div class="mini-card-example">「人間が主役、AIは道具」という基本姿勢</div></div><div class="mini-card"><div class="mini-card-title">安全・信頼に関わる原則</div><div class="mini-card-desc"><strong>安全性</strong>：AIが人に危害を与えない<br><strong>公平性</strong>：差別や偏りのない判断<br><strong>プライバシー保護</strong>：個人情報の適切な扱い<br><strong>セキュリティ確保</strong>：不正利用や攻撃からの防御</div><div class="mini-card-example">安心して使える環境の整備</div></div><div class="mini-card"><div class="mini-card-title">責任・発展に関わる原則</div><div class="mini-card-desc"><strong>透明性</strong>：AIの判断過程が説明可能<br><strong>アカウンタビリティ</strong>：責任の所在が明確<br><strong>公正競争確保</strong>：特定企業の独占を防ぐ<br><strong>イノベーション</strong>：技術革新の促進</div><div class="mini-card-example">健全な競争と継続的な進化</div></div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">覚え方のコツ</span></div><div class="advice-text">10項目は多いですが、「人間のため」「安心して使える」「責任と発展」の<strong>3グループ</strong>で整理すると覚えやすくなります。試験では「利益最大化」「効率重視」のような<strong>ビジネス寄りの選択肢が引っかけ</strong>として登場します。</div></div>`,
+    summary: `共通の指針に<strong>「利益の最大化が最優先」は含まれません</strong>。人間中心・安全性・公平性・透明性・アカウンタビリティなど、<strong>社会全体の利益と安全</strong>が重視されています。`,
+    related: [{ qIndex: 15, keyword: 'AI社会の3理念' }]
+  },
+
+  // Q18: AIの3主体・AIガバナンス
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'AI事業者ガイドラインにおけるAI事業活動の3つの主体に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'AI開発者（AI Developer）はAIシステムを開発する主体であり、AI提供者（AI Provider）はそれをサービスとして提供する主体である',
+      'AI利用者（AI Business User）とは、AIサービスを個人的に使う一般消費者を指す',
+      'AI事業活動の主体は「AI開発者」と「AI利用者」の2者のみで構成される',
+      'AIガバナンスとは、AI開発の技術的な手順書のことである'
+    ],
+    correct: 0,
+    simple: `AI事業者ガイドラインでは、AI事業活動を担う主体を<strong>3つ</strong>に分けています。<strong>AI開発者（AI Developer）</strong>＝AIを開発する主体、<strong>AI提供者（AI Provider）</strong>＝AIをサービスとして提供する主体、<strong>AI利用者（AI Business User）</strong>＝AIを業務に活用する事業者です。AI利用者は一般消費者ではなく<strong>ビジネスとしてAIを利用する事業者</strong>を指します。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">AI開発者（AI Developer）</div><div class="mini-card-desc"><strong>AIシステムを研究・開発</strong>する主体。AIモデルの設計・学習・構築を行います。</div><div class="mini-card-example">例：OpenAI、Google DeepMind、Anthropicなど</div></div><div class="mini-card"><div class="mini-card-title">AI提供者（AI Provider）</div><div class="mini-card-desc">開発されたAIを<strong>サービスや製品として提供</strong>する主体。APIの提供や、AI搭載製品の販売を行います。</div><div class="mini-card-example">例：ChatGPTをサービスとして提供するOpenAI、AI搭載ツールを販売する企業</div></div><div class="mini-card"><div class="mini-card-title">AI利用者（AI Business User）</div><div class="mini-card-desc">提供されたAIサービスを<strong>業務に活用する事業者</strong>。一般消費者ではなく、ビジネス目的でAIを導入・運用する企業や組織を指します。</div><div class="mini-card-example">例：AIチャットボットを顧客対応に導入した企業</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">AIガバナンスとは</span></div><div class="advice-text"><strong>AIガバナンス</strong>は技術的な手順書ではなく、AIを<strong>組織として適切に管理・運用するための体制づくり</strong>のこと。環境・リスク分析→ゴール設定→マネジメントシステムの構築というプロセスで進めます。</div></div>`,
+    summary: `3主体：<strong>AI開発者（開発する）・AI提供者（サービスとして提供する）・AI利用者（業務に活用する事業者）</strong>。AI利用者は一般消費者ではなくビジネスユーザーです。`,
+    related: [{ qIndex: 16, keyword: 'AI社会原則' }]
+  },
+
+  // ============================================================
+  // Section 6: AI新法（Q19〜Q20）
+  // ============================================================
+
+  // Q19: AI新法の概要
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'AI新法（人工知能関連技術の研究開発及び活用の推進に関する法律）に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'AI新法は、AIの研究開発と活用の推進を目的とした法律であり、2025年に公布された',
+      'AI新法は、すべてのAI開発を政府の許可制にするための法律である',
+      'AI新法は、AI事業者ガイドラインを廃止して置き換えるために制定された',
+      'AI新法は、AI技術の利用を特定の産業分野に限定することを目的としている'
+    ],
+    correct: 0,
+    simple: `<strong>AI新法</strong>（正式名称：人工知能関連技術の研究開発及び活用の推進に関する法律）は、<strong>2025年6月4日に公布</strong>された法律です。AIの研究開発と活用を<strong>推進</strong>することが目的であり、AIの利用を制限・禁止するためのものではありません。AI事業者ガイドラインを廃止するものでもなく、ガイドラインと<strong>補完的な関係</strong>にあります。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「規制」ではなく「推進」の法律</div><div class="story-text">「AI新法」と聞くと、AIを規制する法律だと思うかもしれません。しかし、この法律の正式名称をよく見てください。<br><br>「人工知能関連技術の<strong>研究開発及び活用の推進</strong>に関する法律」<br><br>キーワードは<strong>「推進」</strong>です。AIの開発や活用を適切に進めていくための基盤を作る法律であり、「AIを禁止する」「許可制にする」といった趣旨ではありません。<br><br>では、すでにあるAI事業者ガイドラインとの関係はどうなのか？<br><br>AI事業者ガイドラインは<strong>事業者の自主的な取り組みの指針</strong>であり、法的拘束力はありません。AI新法はこのガイドラインを<strong>廃止するのではなく、法律という枠組みで補完</strong>する関係です。ガイドラインで示された理念を、法律が裏付けるイメージです。</div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">押さえるべき基本情報</span></div><div class="keyword-list"><div class="keyword-item"><span class="keyword-num">①</span><div><div class="keyword-text">公布日：2025年6月4日</div></div></div><div class="keyword-item"><span class="keyword-num">②</span><div><div class="keyword-text">目的：研究開発と活用の「推進」</div></div></div><div class="keyword-item"><span class="keyword-num">③</span><div><div class="keyword-text">ガイドラインとは補完的な関係</div></div></div></div></div>`,
+    summary: `AI新法は<strong>2025年6月4日公布</strong>、目的は<strong>AIの研究開発と活用の推進</strong>。AI事業者ガイドラインを廃止するものではなく、<strong>補完的な関係</strong>です。`,
+    related: []
+  },
+
+  // Q20: AI新法とガイドラインの関連 ★不適切★
+  {
+    chapter: '第4章 情報リテラシー・AI事業者ガイドライン・AI新法',
+    question: 'AI新法とAI事業者ガイドラインの関係、およびAI活用において事業者が注意すべきリスクに関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'AI事業者ガイドラインは法的拘束力のない自主的な指針であり、AI新法はそれを法律で補完する関係にある',
+      'AI新法の制定により、事業者はAI活用における具体的なリスク（偏見の増幅、プライバシー侵害など）にも注意が必要とされている',
+      'AI新法が施行されたことで、AI事業者ガイドラインは法的効力を失い、事業者が参照する必要はなくなった',
+      'AI新法とAI事業者ガイドラインはともに、AIの安全な活用と社会的信頼の確保を目指している'
+    ],
+    correct: 2,
+    simple: `AI新法が施行されても、<strong>AI事業者ガイドラインは引き続き有効</strong>です。ガイドラインは事業者が自主的に取り組むための指針として残り、AI新法と<strong>相互に補完し合う関係</strong>です。「新法ができたからガイドラインは不要」というのは誤りです。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「法律」と「ガイドライン」は役割が違う</div><div class="story-text">たとえば、交通ルールで考えてみましょう。<br><br><strong>道路交通法</strong>（法律）：「制限速度を超えたら違反」「飲酒運転は禁止」など、守らなければ罰則がある<br><strong>安全運転のガイドブック</strong>（ガイドライン）：「車間距離はこのくらいが安全」「雨の日はこう運転しよう」など、より良い運転のための指針<br><br>法律ができたからといって、ガイドブックが不要になるわけではありませんよね。むしろ、法律が「最低限守るべきライン」を示し、ガイドラインが「より良い実践」を示すという<strong>補完関係</strong>です。<br><br>AI新法とAI事業者ガイドラインもまったく同じ構図です。<br><br>そして、事業者がAIを活用する際には具体的なリスクにも目を向ける必要があります。AIによる<strong>偏見の増幅</strong>、<strong>プライバシー侵害</strong>、<strong>誤情報の拡散</strong>など——こうしたリスクを理解した上で適切に管理することが、法律とガイドラインの両方から求められています。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">試験のひっかけ</span></div><div class="advice-text">「新法ができた→ガイドラインは不要」は典型的な引っかけパターンです。<strong>法律＝最低限のルール</strong>、<strong>ガイドライン＝より良い実践の指針</strong>と覚えましょう。両方必要です。</div></div>`,
+    summary: `AI新法施行後も<strong>AI事業者ガイドラインは引き続き有効</strong>。法律は最低限のルール、ガイドラインはより良い実践の指針であり、<strong>相互補完の関係</strong>です。`,
+    related: [{ qIndex: 18, keyword: 'AI新法の概要' }, { qIndex: 15, keyword: 'AI社会原則' }]
+  }
+];
+
+// ============================================================
+// アプリ制御
+// ============================================================
+let currentQ = 0, selectedIdx = null, correctCount = 0, wrongCount = 0;
+const total = questions.length;
+
+function showScreen(id) {
+  ['step1','step2','stepDeepDive','step3','step4','stepComplete'].forEach(s => {
+    document.getElementById(s).classList.add('hidden');
+  });
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress() {
+  const pct = Math.round((currentQ / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressLabel').textContent = `${total}問中${currentQ + 1}問目`;
+}
+
+function renderChoices(containerId, choices, clickable) {
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  choices.forEach((text, i) => {
+    const d = document.createElement('div');
+    d.className = clickable ? 'choice clickable' : 'choice';
+    d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text}</span>`;
+    if (clickable) d.onclick = () => selectChoice(i);
+    c.appendChild(d);
+  });
+}
+
+function renderRelated(containerId, related) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if (!related || related.length === 0) return;
+  related.forEach(rel => {
+    const q = questions[rel.qIndex];
+    if (!q) return;
+    const block = document.createElement('div');
+    block.className = 'related-block';
+    const toggle = document.createElement('button');
+    toggle.className = 'related-toggle';
+    toggle.innerHTML = `<span class="toggle-icon">▶</span> 関連：${rel.keyword}（問題${rel.qIndex+1}）`;
+    const content = document.createElement('div');
+    content.className = 'related-content';
+    content.innerHTML = `<div class="related-content-inner"><div class="related-q-label">問題${rel.qIndex+1}のかんたん解説</div>${q.simple}</div>`;
+    toggle.onclick = () => {
+      toggle.classList.toggle('open');
+      if (content.classList.contains('open')) {
+        content.style.maxHeight = '0';
+        content.classList.remove('open');
+      } else {
+        content.classList.add('open');
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    };
+    block.appendChild(toggle);
+    block.appendChild(content);
+    container.appendChild(block);
+  });
+}
+
+function initMiniQuizzes() {
+  document.querySelectorAll('.mini-quiz-options button').forEach(btn => {
+    btn.classList.remove('quiz-correct', 'answered');
+  });
+  document.querySelectorAll('.mini-quiz-answer').forEach(el => {
+    el.classList.remove('show');
+  });
+}
+
+function setupMiniQuizzes() {
+  document.querySelectorAll('.mini-quiz').forEach(quiz => {
+    const buttons = quiz.querySelectorAll('.mini-quiz-options button');
+    const answer = quiz.querySelector('.mini-quiz-answer');
+    let answered = false;
+    buttons.forEach(btn => {
+      btn.onclick = () => {
+        if (answered) return;
+        answered = true;
+        buttons.forEach(b => {
+          if (b.dataset.correct === 'true') {
+            b.classList.add('quiz-correct');
+          } else {
+            b.classList.add('answered');
+          }
+        });
+        answer.classList.add('show');
+      };
+    });
+  });
+}
+
+function loadQuestion(idx) {
+  const q = questions[idx];
+  const qnum = `問題 ${idx+1}`;
+  document.getElementById('s1-qnum').textContent = qnum;
+  document.getElementById('s1-qtext').innerHTML = q.question;
+  renderChoices('s1-choices', q.choices, false);
+  document.getElementById('s2-qtext').innerHTML = q.question;
+  document.getElementById('s2-simple').innerHTML = q.simple;
+  renderRelated('s2-related', q.related);
+  document.getElementById('deepdive-content').innerHTML = q.deepdive;
+  document.getElementById('s3-qnum').textContent = qnum;
+  document.getElementById('s3-qtext').innerHTML = q.question;
+  renderChoices('s3-choices', q.choices, true);
+  selectedIdx = null;
+  document.getElementById('answerBtn').classList.add('hidden');
+  // ミニクイズの初期化とセットアップ
+  requestAnimationFrame(() => { initMiniQuizzes(); setupMiniQuizzes(); });
+}
+
+function showStep2() { showScreen('step2'); }
+function showDeepDive() { showScreen('stepDeepDive'); }
+function showStep3() {
+  showScreen('step3');
+  selectedIdx = null;
+  document.querySelectorAll('#s3-choices .choice').forEach(c => c.className = 'choice clickable');
+  document.getElementById('answerBtn').classList.add('hidden');
+}
+
+function selectChoice(idx) {
+  selectedIdx = idx;
+  document.querySelectorAll('#s3-choices .choice').forEach(c => c.className = 'choice clickable');
+  document.querySelectorAll('#s3-choices .choice')[idx].classList.add('selected');
+  document.getElementById('answerBtn').classList.remove('hidden');
+}
+
+function showResult() {
+  const q = questions[currentQ], isCorrect = selectedIdx === q.correct;
+  if (isCorrect) correctCount++; else wrongCount++;
+  document.getElementById('resultBox').innerHTML = isCorrect
+    ? `<span class="result-icon">🌸</span><div class="result-title correct">正解！</div>`
+    : `<span class="result-icon">💭</span><div class="result-title wrong">惜しい！</div>`;
+  const s4 = document.getElementById('s4-choices'); s4.innerHTML = '';
+  q.choices.forEach((text, i) => {
+    const d = document.createElement('div');
+    if (i === q.correct) { d.className = 'choice correct'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text} ✓</span>`; }
+    else if (i === selectedIdx && !isCorrect) { d.className = 'choice wrong'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text} ✗</span>`; }
+    else { d.className = 'choice'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text}</span>`; }
+    s4.appendChild(d);
+  });
+  document.getElementById('s4-summary').innerHTML = q.summary;
+  const nb = document.getElementById('nextBtn');
+  if (currentQ === questions.length - 1) { nb.textContent = '結果を見る 🌸'; nb.className = 'btn btn-gold'; }
+  else { nb.textContent = '次の問題へ進む →'; nb.className = 'btn btn-success'; }
+  showScreen('step4');
+}
+
+function nextQuestion() {
+  if (currentQ === questions.length - 1) { showComplete(); return; }
+  currentQ++;
+  loadQuestion(currentQ);
+  updateProgress();
+  showScreen('step1');
+}
+
+function showComplete() {
+  document.getElementById('correctCount').textContent = correctCount;
+  document.getElementById('wrongCount').textContent = wrongCount;
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressPct').textContent = '100%';
+  document.getElementById('progressLabel').textContent = `${total}問中${total}問目`;
+  const pct = correctCount / questions.length;
+  let msg = pct === 1 ? '全問正解！素晴らしいです🌸\n第4章の内容はバッチリです。第5章へ進みましょう！'
+    : pct >= 0.8 ? 'とてもよくできました！\n間違えた問題だけもう一度確認してみましょう。'
+    : pct >= 0.6 ? 'まずまずです！\n間違えた問題の解説を読み直してから、もう一度チャレンジを。'
+    : 'もう一度チャレンジしてみましょう！\n深掘り解説をじっくり読んでから再挑戦すると定着します。';
+  document.getElementById('completeMessage').textContent = msg;
+  showScreen('stepComplete');
+}
+
+function restartQuiz() {
+  currentQ = 0; selectedIdx = null; correctCount = 0; wrongCount = 0;
+  loadQuestion(0);
+  updateProgress();
+  showScreen('step1');
+}
+
+loadQuestion(0);
+updateProgress();
+showScreen('step1');
+</script>
+</body>
+</html>

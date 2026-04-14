@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<title>生成AIパスポート 第5章 テキスト生成AIのプロンプト制作と実例</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf8f5;
+    --surface: #ffffff;
+    --surface2: #fef3f0;
+    --surface3: #f0f7f4;
+    --pink: #f4a7b9;
+    --pink-light: #fde8ee;
+    --pink-deep: #e8849a;
+    --mint: #a8d5c2;
+    --mint-light: #e6f5ef;
+    --mint-deep: #7bbfa8;
+    --peach: #f7c4a0;
+    --peach-light: #fef0e6;
+    --lavender: #c4b5e8;
+    --lavender-light: #ede8f8;
+    --text: #3d3335;
+    --text-mid: #7a6568;
+    --text-light: #b09a9d;
+    --border: rgba(244,167,185,0.25);
+    --shadow: 0 4px 24px rgba(244,167,185,0.15);
+    --shadow-sm: 0 2px 12px rgba(244,167,185,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; color-scheme: light; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(244,167,185,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(168,213,194,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(196,181,232,0.06) 0%, transparent 70%);
+  }
+  .app { width:100%; max-width:640px; }
+  .header { text-align:center; margin-bottom:28px; animation: floatUp 0.7s ease; }
+  .header-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
+    border: 1.5px solid rgba(244,167,185,0.4);
+    color: var(--pink-deep); font-size:11px; font-weight:700; letter-spacing:2px;
+    padding:6px 18px; border-radius:20px; margin-bottom:14px; text-transform:uppercase;
+  }
+  .header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size:23px; font-weight:700; color: var(--text); line-height:1.6;
+  }
+  .header-deco { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px; }
+  .deco-line { width:40px; height:1.5px; background:linear-gradient(90deg, transparent, var(--pink)); }
+  .deco-line.right { background:linear-gradient(90deg, var(--pink), transparent); }
+  .deco-dot { width:5px; height:5px; border-radius:50%; background:var(--pink); }
+  .progress-wrap { margin-bottom:22px; animation: floatUp 0.7s ease 0.05s both; }
+  .progress-meta { display:flex; justify-content:space-between; font-size:12px; color:var(--text-light); margin-bottom:8px; }
+  .progress-bar { height:6px; background:var(--pink-light); border-radius:10px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--pink), var(--peach)); border-radius:10px; transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--pink), var(--peach), var(--mint));
+    border-radius:24px 24px 0 0;
+  }
+  .deepdive-card {
+    background: var(--surface); border: 1.5px solid rgba(247,196,160,0.4);
+    border-radius:24px; padding:32px 28px;
+    animation: floatUp 0.5s ease;
+    box-shadow: 0 4px 24px rgba(247,196,160,0.2);
+    position:relative; overflow:hidden;
+  }
+  .deepdive-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--peach), var(--lavender));
+    border-radius:24px 24px 0 0;
+  }
+  .q-num-simple { font-size:12px; color:var(--text-light); text-align:right; margin-bottom:10px; font-weight:700; letter-spacing:1px; }
+  .question-text {
+    font-family:'Shippori Mincho', serif; font-size:16px; line-height:1.9;
+    margin-bottom:22px; padding:18px 20px;
+    background: linear-gradient(135deg, var(--surface2), #fff9f7);
+    border-radius:16px; border-left:3px solid var(--pink); color: var(--text);
+  }
+  .choices { display:flex; flex-direction:column; gap:10px; margin-bottom:22px; }
+  .choice {
+    display:flex; align-items:center; gap:12px; padding:14px 18px;
+    background: var(--surface); border: 1.5px solid rgba(244,167,185,0.2);
+    border-radius:14px; font-size:14px; color:#5a4a4d;
+    font-family:'Shippori Mincho', serif; transition:all 0.2s ease; line-height:1.6;
+  }
+  .choice.clickable { cursor:pointer; }
+  .choice.clickable:hover { border-color:var(--pink); background:var(--pink-light); color:var(--text); transform:translateX(4px); box-shadow:var(--shadow-sm); }
+  .choice.selected { border-color:var(--pink-deep); background:var(--pink-light); color:var(--text); box-shadow:var(--shadow-sm); }
+  .choice.correct { border-color:var(--mint-deep); background:var(--mint-light); color:var(--text); }
+  .choice.wrong { border-color:#e8a0aa; background:#fdf0f2; color:var(--text-light); text-decoration:line-through; }
+  .choice-num {
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; transition:all 0.2s ease;
+    background:var(--pink-light); color:var(--pink-deep); border:1.5px solid rgba(244,167,185,0.4);
+  }
+  .choice.selected .choice-num { background:var(--pink-deep); color:white; border-color:var(--pink-deep); }
+  .choice.correct .choice-num { background:var(--mint-deep); color:white; border-color:var(--mint-deep); }
+  .choice.wrong .choice-num { background:#f0c4c8; color:#c47a80; border-color:#e8a0aa; }
+  .simple-explanation { background:var(--surface2); border-radius:16px; padding:22px; margin-bottom:22px; border:1px solid rgba(244,167,185,0.15); }
+  .explanation-title {
+    font-size:11px; font-weight:700; color:#c47a40; letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .explanation-title::before { content:''; width:3px; height:14px; background:var(--peach); border-radius:2px; display:inline-block; }
+  .explanation-text { font-size:14px; line-height:1.9; color:var(--text); }
+  .explanation-text strong { color:#c47a40; }
+  .related-block { margin-bottom:22px; }
+  .related-toggle {
+    display:flex; align-items:center; gap:8px; width:100%; padding:12px 16px;
+    background: linear-gradient(135deg, var(--lavender-light), #f8f5fd);
+    border: 1.5px solid rgba(196,181,232,0.35);
+    border-radius:12px; cursor:pointer; transition:all 0.2s ease;
+    font-family:'Zen Maru Gothic',sans-serif; font-size:13px; color:#7a6ab8; font-weight:700;
+  }
+  .related-toggle:hover { border-color:var(--lavender); background:var(--lavender-light); }
+  .related-toggle .toggle-icon { transition:transform 0.3s ease; font-size:11px; }
+  .related-toggle.open .toggle-icon { transform:rotate(90deg); }
+  .related-content {
+    max-height:0; overflow:hidden; transition:max-height 0.4s ease;
+    border-left:2px solid rgba(196,181,232,0.3); margin-left:12px; margin-top:0;
+  }
+  .related-content.open { margin-top:10px; }
+  .related-content-inner { padding:14px 16px; font-size:13px; line-height:1.8; color:var(--text-mid); }
+  .related-content-inner strong { color:#c47a40; }
+  .related-q-label { font-size:10px; font-weight:700; letter-spacing:1px; color:var(--lavender); margin-bottom:6px; text-transform:uppercase; }
+  .branch-buttons { display:flex; flex-direction:column; gap:10px; }
+  .btn-branch-ok {
+    width:100%; padding:14px; border-radius:14px;
+    font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease;
+    background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; border:none;
+    box-shadow:0 4px 16px rgba(244,167,185,0.4);
+  }
+  .btn-branch-ok:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+  .deepdive-link {
+    display:block; text-align:center; margin-top:12px;
+    font-size:12px; color:var(--text-light); text-decoration:none; cursor:pointer;
+    transition: color 0.2s ease; background:none; border:none; width:100%;
+    font-family:'Zen Maru Gothic',sans-serif; padding:6px;
+  }
+  .deepdive-link:hover { color:var(--pink-deep); }
+  .story-block {
+    background:linear-gradient(135deg, var(--lavender-light), var(--peach-light));
+    border:1.5px solid rgba(196,181,232,0.3); border-radius:16px; padding:22px; margin-bottom:18px; position:relative;
+  }
+  .story-block::before { content:'📖'; font-size:18px; position:absolute; top:-10px; left:18px; background:var(--surface); padding:0 6px; }
+  .story-lead { font-family:'Shippori Mincho',serif; font-size:16px; font-weight:700; color:#7a6ab8; line-height:1.6; margin-bottom:14px; }
+  .story-text { font-size:14px; line-height:2; color:var(--text); }
+  .story-text strong { color:#c47a40; }
+  .story-text em { color:var(--mint-deep); font-style:normal; font-weight:700; }
+  .advice-box { border-radius:16px; padding:20px; margin-bottom:20px; border:1.5px solid; }
+  .advice-box.memory-type { background:var(--lavender-light); border-color:rgba(196,181,232,0.5); }
+  .advice-box.understand-type { background:var(--mint-light); border-color:rgba(168,213,194,0.5); }
+  .advice-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .advice-badge { font-size:10px; font-weight:700; letter-spacing:1px; padding:3px 10px; border-radius:20px; text-transform:uppercase; }
+  .memory-type .advice-badge { background:rgba(196,181,232,0.4); color:#7a6ab8; }
+  .understand-type .advice-badge { background:rgba(168,213,194,0.4); color:var(--mint-deep); }
+  .advice-header-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .keyword-item {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(196,181,232,0.2); border:1px solid rgba(196,181,232,0.4);
+    border-radius:10px; padding:7px 12px;
+  }
+  .keyword-num { font-size:11px; color:#7a6ab8; font-weight:700; }
+  .keyword-text { font-size:13px; font-weight:700; color:var(--text); }
+  .keyword-note { font-size:11px; color:var(--text-light); margin-top:2px; }
+  .advice-text { font-size:13px; line-height:1.9; color:var(--text); }
+  .advice-text strong { color:var(--mint-deep); }
+  .card-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .mini-card {
+    border-radius:14px; padding:16px 18px;
+    border:1.5px solid rgba(196,181,232,0.3);
+    background:linear-gradient(135deg, var(--lavender-light), #fff);
+  }
+  .mini-card-title { font-size:13px; font-weight:700; color:#7a6ab8; margin-bottom:6px; }
+  .mini-card-desc { font-size:13px; color:var(--text); line-height:1.7; }
+  .mini-card-desc strong { color:#c47a40; }
+  .mini-card-example { font-size:12px; color:var(--text-light); margin-top:4px; }
+  /* ミニクイズ */
+  .mini-quiz {
+    background: linear-gradient(135deg, var(--mint-light), #f0faf5);
+    border: 1.5px solid rgba(168,213,194,0.4);
+    border-radius:16px; padding:20px; margin-bottom:18px;
+  }
+  .mini-quiz-title {
+    font-size:11px; font-weight:700; color:var(--mint-deep); letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:10px; display:flex; align-items:center; gap:6px;
+  }
+  .mini-quiz-title::before { content:'✏️'; font-size:14px; }
+  .mini-quiz-question { font-size:14px; font-weight:700; color:var(--text); line-height:1.7; margin-bottom:14px; }
+  .mini-quiz-options { display:flex; flex-direction:column; gap:8px; }
+  .mini-quiz-options button {
+    display:block; width:100%; padding:11px 16px; border-radius:10px;
+    font-size:13px; font-family:'Zen Maru Gothic',sans-serif; font-weight:500;
+    background:var(--surface); border:1.5px solid rgba(168,213,194,0.3);
+    color:var(--text); cursor:pointer; transition:all 0.2s ease; text-align:left;
+  }
+  .mini-quiz-options button:hover:not(.answered) { border-color:var(--mint); background:rgba(168,213,194,0.1); transform:translateX(3px); }
+  .mini-quiz-options button.quiz-correct { border-color:var(--pink); background:var(--pink-light); color:var(--text); font-weight:700; position:relative; padding-right:40px; }
+  .mini-quiz-options button.quiz-correct::after { content:'◯'; position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:18px; color:var(--pink-deep); font-weight:700; }
+  .mini-quiz-options button.answered:not(.quiz-correct) { opacity:0.45; cursor:default; }
+  .mini-quiz-answer {
+    margin-top:12px; padding:12px 14px; border-radius:10px;
+    background:rgba(168,213,194,0.15); font-size:13px; line-height:1.7; color:var(--text-mid);
+    display:none;
+  }
+  .mini-quiz-answer.show { display:block; animation: floatUp 0.3s ease; }
+  .result-box { text-align:center; padding:14px 0; margin-bottom:18px; }
+  .result-icon { font-size:44px; margin-bottom:8px; display:block; animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .result-title { font-family:'Shippori Mincho',serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+  .result-title.correct { color:var(--mint-deep); }
+  .result-title.wrong { color:var(--pink-deep); }
+  .complete-box { text-align:center; padding:16px 0; }
+  .complete-icon { font-size:56px; margin-bottom:14px; display:block; animation:popIn 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .complete-title { font-family:'Shippori Mincho',serif; font-size:24px; font-weight:700; color:var(--pink-deep); margin-bottom:18px; }
+  .score-detail { display:flex; justify-content:center; gap:24px; margin-bottom:20px; }
+  .score-item { text-align:center; }
+  .score-item-num { font-size:32px; font-weight:700; }
+  .score-item-label { font-size:11px; color:var(--text-light); margin-top:3px; }
+  .complete-message { font-size:13px; color:var(--text-mid); line-height:1.9; margin-bottom:24px; white-space:pre-line; }
+  .btn { width:100%; padding:15px; border:none; border-radius:14px; font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease; letter-spacing:0.3px; }
+  .btn-primary { background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white; box-shadow:0 4px 16px rgba(244,167,185,0.4); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,167,185,0.5); }
+  .btn-secondary { background:var(--surface); color:var(--text-mid); border:1.5px solid rgba(244,167,185,0.3); }
+  .btn-secondary:hover { border-color:var(--pink); color:var(--pink-deep); }
+  .btn-success { background:linear-gradient(135deg, var(--mint), var(--mint-deep)); color:white; box-shadow:0 4px 16px rgba(168,213,194,0.4); }
+  .btn-success:hover { transform:translateY(-2px); }
+  .btn-gold { background:linear-gradient(135deg, var(--peach), #e8904a); color:white; box-shadow:0 4px 16px rgba(247,196,160,0.4); }
+  .btn-gold:hover { transform:translateY(-2px); }
+  .btn-back {
+    display:inline-block; margin-top:14px; padding:6px 10px; border-radius:8px;
+    font-size:11px; font-weight:500; font-family:'Zen Maru Gothic',sans-serif;
+    cursor:pointer; transition:all 0.2s ease; background:transparent; border:none; color:var(--text-light); text-align:left;
+  }
+  .btn-back:hover { color:var(--text-mid); }
+  .hint { text-align:center; font-size:12px; color:var(--text-light); margin-bottom:14px; line-height:1.6; }
+  .hidden { display:none; }
+  @keyframes floatUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  @media (min-width: 768px) {
+    .app { max-width: 720px; }
+    .header h1 { font-size: 27px; }
+    .question-text { font-size: 18px; line-height: 2; padding: 22px 24px; }
+    .choice { font-size: 16px; padding: 16px 20px; }
+    .choice-num { width: 30px; height: 30px; font-size: 13px; }
+    .btn { font-size: 16px; padding: 17px; }
+    .btn-branch-ok { font-size: 16px; padding: 16px; }
+    .explanation-text { font-size: 16px; }
+    .story-text { font-size: 15px; }
+    .story-lead { font-size: 18px; }
+    .advice-text { font-size: 15px; }
+    .keyword-text { font-size: 15px; }
+    .keyword-note { font-size: 13px; }
+    .mini-card-desc { font-size: 14px; }
+    .mini-quiz-question { font-size: 15px; }
+    .mini-quiz-options button { font-size: 14px; }
+    .mini-quiz-answer { font-size: 14px; }
+    .result-title { font-size: 26px; }
+    .complete-title { font-size: 28px; }
+    .hint { font-size: 14px; }
+    .related-toggle { font-size: 14px; }
+    .related-content-inner { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-badge">🌸 生成AIパスポート対策</div>
+    <h1>第5章　テキスト生成AIの<br>プロンプト制作と実例</h1>
+    <div class="header-deco"><div class="deco-line"></div><div class="deco-dot"></div><div class="deco-line right"></div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-meta"><span id="progressLabel">10問中1問目</span><span id="progressPct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div class="card" id="step1">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <div class="q-num-simple" id="s1-qnum" style="margin-bottom:0;"></div>
+      <div style="font-size:12px; color:var(--text-light);">まず選択肢に目を通してみよう</div>
+    </div>
+    <div class="question-text" id="s1-qtext"></div>
+    <div class="choices" id="s1-choices"></div>
+    <p class="hint">💡 答えは選ばなくてOK</p>
+    <button class="btn btn-primary" onclick="showStep2()">解説を読む →</button>
+  </div>
+  <div class="card hidden" id="step2">
+    <div class="question-text" id="s2-qtext"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">かんたん解説</div>
+      <div class="explanation-text" id="s2-simple"></div>
+    </div>
+    <div id="s2-related"></div>
+    <div class="branch-buttons">
+      <button class="btn-branch-ok" onclick="showStep3()">理解できたので問題を解く →</button>
+      <button class="deepdive-link" onclick="showDeepDive()">🔍 もっと詳しく読む</button>
+    </div>
+    <button class="btn-back" onclick="showScreen('step1')">← 問題に戻る</button>
+  </div>
+  <div class="deepdive-card hidden" id="stepDeepDive">
+    <div id="deepdive-content"></div>
+    <button class="btn btn-primary" onclick="showStep3()">問題を解く →</button>
+    <button class="btn-back" onclick="showScreen('step2')">← かんたん解説に戻る</button>
+  </div>
+  <div class="card hidden" id="step3">
+    <div class="q-num-simple" id="s3-qnum"></div>
+    <div class="question-text" id="s3-qtext"></div>
+    <div class="choices" id="s3-choices"></div>
+    <button class="btn btn-secondary hidden" id="answerBtn" onclick="showResult()">答え合わせをする →</button>
+    <button class="btn-back" onclick="showStep2()">← 解説をもう一度確認する</button>
+  </div>
+  <div class="card hidden" id="step4">
+    <div class="result-box" id="resultBox"></div>
+    <div class="choices" id="s4-choices"></div>
+    <div class="simple-explanation">
+      <div class="explanation-title">ポイント</div>
+      <div class="explanation-text" id="s4-summary"></div>
+    </div>
+    <button class="btn btn-success" id="nextBtn" onclick="nextQuestion()">次の問題へ進む →</button>
+  </div>
+  <div class="card hidden" id="stepComplete">
+    <div class="complete-box">
+      <span class="complete-icon">🌸</span>
+      <div class="complete-title">第5章 完了！</div>
+      <div class="score-detail">
+        <div class="score-item"><div class="score-item-num" id="correctCount" style="color:var(--mint-deep)">0</div><div class="score-item-label">正解</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text-light)">／</div><div class="score-item-label">　</div></div>
+        <div class="score-item"><div class="score-item-num" style="color:var(--text)">10</div><div class="score-item-label">問</div></div>
+        <div class="score-item"><div class="score-item-num" id="wrongCount" style="color:var(--pink-deep)">0</div><div class="score-item-label">不正解</div></div>
+      </div>
+      <div class="complete-message" id="completeMessage"></div>
+      <button class="btn btn-gold" onclick="restartQuiz()">もう一度チャレンジする 🌸</button>
+    </div>
+  </div>
+</div>
+<script>
+const questions = [
+  // ============================================================
+  // Section 1: LMとLLM（Q1〜Q3）
+  // ============================================================
+
+  // Q1: LM（言語モデル）の基本原理
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: '言語モデル（LM）に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '言語モデルとは、人間の感情を理解し共感する能力を持ったAIモデルの総称である',
+      '言語モデルとは、文中の次に来る単語を確率的に予測する仕組みであり、ChatGPTなどの生成AIもこの原理に基づいている',
+      '言語モデルは、文章の意味を完全に理解した上で回答を生成しているため、常に正確な情報を出力できる',
+      '言語モデルとは、あらかじめ人間が作成した回答テンプレートの中から最適なものを選択する仕組みである'
+    ],
+    correct: 1,
+    simple: `<strong>言語モデル（LM: Language Model）</strong>とは、大量のテキストデータから「ある単語の次にどんな単語が来やすいか」を学習し、<strong>次の単語を確率的に予測する</strong>仕組みです。ChatGPTなどの生成AIも、この「次の単語を予測する」という原理の延長で文章を生成しています。AIが「考えている」ように見えても、本質は確率的な予測の連鎖です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">スマホの予測変換、その「超大規模版」</div><div class="story-text">スマホで「今日は」と打つと「天気」「ありがとう」「お疲れ」などの候補が出ますよね。<br><br>これはスマホが「今日は」の後に続きやすい言葉を、過去の文章パターンから学んでいるからです。<br><br><strong>言語モデル（LM）</strong>の原理はまさにこれと同じ。「今日は天気が」→ 次は「良い」が確率高い → 「良い」を出力 → 「良いので」→ 次は「散歩」が確率高い…と、<strong>一語ずつ確率的に予測を連鎖させて文章を作っている</strong>のです。<br><br>ChatGPTが長い文章を流暢に書けるのも、この原理を超大規模に発展させたもの。AIが「理解している」「考えている」ように見えても、その根本は<strong>「次に来そうな単語を予測し続けている」</strong>だけ。<br><br>この本質を知っておくと、なぜプロンプトの書き方で出力が大きく変わるのかも理解しやすくなります。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">第5章の大前提</span></div><div class="advice-text">「次の単語を確率的に予測する」という原理は、この先学ぶ<strong>プロンプトエンジニアリング</strong>がなぜ機能するかを理解するための大前提です。プロンプトとは、AIの予測の方向を導くための入力なのです。</div></div>`,
+    summary: `言語モデルの本質は<strong>「次の単語を確率的に予測する」仕組み</strong>。AIは文章を「理解」しているのではなく、確率的な予測を連鎖させて出力しています。`,
+    related: []
+  },
+
+  // Q2: n-gramモデル vs ニューラル言語モデル
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'n-gramモデルとニューラル言語モデルに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'n-gramモデルは、直前のn-1個の単語から次の単語を統計的に予測する手法であり、言語モデルの古典的なアプローチである',
+      'n-gramモデルは大規模なニューラルネットワークを使用しており、深層学習の一種である',
+      'ニューラル言語モデルは統計的な手法を一切使わず、ルールベースで文章を生成する',
+      'n-gramモデルはニューラル言語モデルよりも常に高精度であり、現在も主流の手法である'
+    ],
+    correct: 0,
+    simple: `<strong>n-gramモデル</strong>は、直前のn-1個の単語の並びから次の単語を<strong>統計的に予測</strong>する、言語モデルの古典的な手法です。一方、<strong>ニューラル言語モデル</strong>はニューラルネットワークを使って文脈をより深く捉えることができ、現在のLLM（大規模言語モデル）の基盤となっています。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">n-gramモデル</div><div class="mini-card-desc">直前のn-1個の単語から次を予測する<strong>統計ベース</strong>の手法。「n=2（bigram）」なら直前1語、「n=3（trigram）」なら直前2語を見ます。シンプルで計算が軽いですが、<strong>長い文脈を捉えるのが苦手</strong>です。</div><div class="mini-card-example">例：「東京の天気は」→「晴れ」が統計的に多い→「晴れ」を予測</div></div><div class="mini-card"><div class="mini-card-title">ニューラル言語モデル</div><div class="mini-card-desc">ニューラルネットワークで単語の意味や文脈を<strong>数値ベクトル</strong>として学習する手法。n-gramモデルよりはるかに<strong>長い文脈を考慮</strong>でき、大規模化することでLLM（GPT等）に発展しました。</div><div class="mini-card-example">例：文章全体の文脈を踏まえて、より自然な次の単語を予測</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">技術的アプローチの違い</span></div><div class="advice-text">n-gramは<strong>統計</strong>ベース、ニューラル言語モデルは<strong>ニューラルネットワーク</strong>ベース。どちらも「次の単語を予測する」という目的は同じですが、使う技術が異なります。LLMはニューラル言語モデルを超大規模化したものです。</div></div>`,
+    summary: `n-gramモデルは<strong>統計ベースの古典的手法</strong>、ニューラル言語モデルは<strong>ニューラルネットワークベースの現代的手法</strong>。LLMはニューラル言語モデルを大規模化したものです。`,
+    related: [{ qIndex: 0, keyword: '言語モデル（LM）' }]
+  },
+
+  // Q3: Temperature / Top-p
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'テキスト生成AIにおけるTemperatureとTop-pに関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'Temperatureの値を高く設定すると、出力はより正確で決定的になり、創造性は低下する',
+      'Top-pは、累積確率が指定した値に達するまでの上位の単語候補から次の単語を選ぶ仕組みである',
+      'TemperatureとTop-pは、AIの学習段階で開発者が設定するパラメータであり、利用者は変更できない',
+      'Temperatureを0に設定すると、毎回まったく異なるランダムな文章が生成される'
+    ],
+    correct: 1,
+    simple: `<strong>Temperature</strong>と<strong>Top-p</strong>は、生成AIが文章を出力する際の「多様性」をコントロールするパラメータです。Temperatureは<strong>値が高いほど多様で創造的</strong>な出力になり、<strong>低いほど正確で安定した</strong>出力になります。Top-pは<strong>確率の上位何%から単語を選ぶか</strong>を制御します。どちらも<strong>推論時（生成時）</strong>にユーザーが調整できるパラメータです。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">Temperature</div><div class="mini-card-desc">出力の「ランダムさ」を調整するパラメータ。<strong>値が高い（例: 1.0）</strong>→ 多様・創造的だが、正確性は下がる。<strong>値が低い（例: 0.1）</strong>→ 安定・正確だが、単調になりがち。<strong>0に近い</strong>→ 毎回ほぼ同じ（最も確率の高い単語を選び続ける）。</div><div class="mini-card-example">例：ブレストなら高め、契約書の要約なら低め</div></div><div class="mini-card"><div class="mini-card-title">Top-p（核サンプリング）</div><div class="mini-card-desc">累積確率がpに達するまでの<strong>上位候補</strong>から選ぶ仕組み。<strong>Top-p = 0.9</strong>→ 確率上位90%の候補群から選択。<strong>Top-p = 0.1</strong>→ 確率上位10%の狭い候補からのみ選択。Temperatureとは異なるアプローチですが、どちらも出力の多様性を制御します。</div><div class="mini-card-example">例：Top-p=0.9で幅広い候補から、Top-p=0.1で堅い候補のみから選択</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">第2章との違い</span></div><div class="advice-text">第2章で学ぶ「ハイパーパラメータ（学習率など）」は<strong>開発者がAIを訓練するとき</strong>に設定するもの。Temperature・Top-pは<strong>ユーザーがAIを使うとき</strong>に調整するもの。「誰が」「いつ」設定するかが異なります。</div></div>`,
+    summary: `Temperatureは<strong>高い＝多様・創造的、低い＝安定・正確</strong>。Top-pは<strong>上位何%の候補から選ぶか</strong>を制御。どちらもユーザーが推論時に調整できるパラメータです。`,
+    related: [{ qIndex: 0, keyword: '言語モデル（LM）' }]
+  },
+
+  // ============================================================
+  // Section 2: プロンプティングの基礎（Q4〜Q5）
+  // ============================================================
+
+  // Q4: プロンプトの構成要素（含まれないもの）
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'LLMモデルにプロンプトを入力する際、出力の質が向上する要素に含まれないものはどれか。',
+    choices: [
+      '命令（Instruction）',
+      '文脈（Context）',
+      '学習回数（Epoch）',
+      '出力指示（Output Indicator）'
+    ],
+    correct: 2,
+    simple: `プロンプトの質を高めるための基本要素は、<strong>命令（Instruction）</strong>＝AIに何をさせたいか、<strong>文脈（Context）</strong>＝背景情報、<strong>入力データ（Input Data）</strong>＝処理対象の情報、<strong>出力指示（Output Indicator）</strong>＝どんな形式で出力してほしいか、の4つです。<strong>学習回数（Epoch）</strong>はAIの訓練時に使われる用語であり、プロンプトの構成要素ではありません。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① 命令（Instruction）</div><div class="mini-card-desc">AIに<strong>「何をしてほしいか」</strong>を伝える部分。プロンプトの核となる指示です。</div><div class="mini-card-example">例：「以下の文章を要約してください」「箇条書きに変換してください」</div></div><div class="mini-card"><div class="mini-card-title">② 文脈（Context）</div><div class="mini-card-desc"><strong>背景情報や前提条件</strong>を伝える部分。AIが状況を把握するための手がかりになります。</div><div class="mini-card-example">例：「あなたはマーケティングの専門家です」「この文章は社内報向けです」</div></div><div class="mini-card"><div class="mini-card-title">③ 入力データ（Input Data）</div><div class="mini-card-desc">AIに<strong>処理させたい具体的な情報</strong>。要約してほしい文章、翻訳してほしいテキストなど。</div><div class="mini-card-example">例：要約対象の文章、分析対象のデータ</div></div><div class="mini-card"><div class="mini-card-title">④ 出力指示（Output Indicator）</div><div class="mini-card-desc">出力の<strong>形式や条件</strong>を指定する部分。長さ、フォーマット、言語などを明示します。</div><div class="mini-card-example">例：「200文字以内で」「JSON形式で」「表形式で」</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">仲間外れの見分け方</span></div><div class="advice-text"><strong>学習回数（Epoch）</strong>はAIの訓練プロセスで使われる用語で、プロンプトとは無関係です。4要素は<strong>「何を」「どんな背景で」「何を使って」「どう出力」</strong>と覚えると整理しやすいです。</div></div>`,
+    summary: `プロンプトの4要素は<strong>命令・文脈・入力データ・出力指示</strong>。学習回数（Epoch）はAIの訓練に関する用語で、プロンプトの要素ではありません。`,
+    related: []
+  },
+
+  // Q5: Zero-Shot / Few-Shot ★不適切★
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'Zero-ShotプロンプティングおよびFew-Shotプロンプティングに関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'Zero-Shotプロンプティングとは、例示を与えずに質問や指示だけを入力し、回答を得る手法である',
+      'Zero-Shotプロンプティングは簡単なタスクには有効だが、複雑なタスクでは回答の精度が低くなることがある',
+      'Few-Shotプロンプティングとは、いくつかの入力と出力の例を示してから質問を行うことで、より望ましい回答を得る手法である',
+      'Few-Shotプロンプティングで例示を与えると、AIはその場で新たに学習を行い、モデル自体の性能が恒久的に向上する'
+    ],
+    correct: 3,
+    simple: `<strong>Zero-Shotプロンプティング</strong>は例示なしで質問する手法、<strong>Few-Shotプロンプティング</strong>はいくつかの例を示してから質問する手法です。Few-Shotで例示を与えると、AIはその場の文脈として参考にするだけであり、<strong>モデル自体が新たに学習するわけではありません</strong>。プロンプト内の例示は一時的な「お手本」にすぎず、次の会話には引き継がれません。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">Zero-Shotプロンプティング</div><div class="mini-card-desc">例示が<strong>0個</strong>の状態で質問・指示を行う手法。「このメールを要約して」のように、聞きたいことをそのまま入力するだけ。簡単なタスクには十分ですが、<strong>複雑なタスクでは精度が下がりやすい</strong>です。</div><div class="mini-card-example">例：「この文章を英語に翻訳してください」→例示なしで直接依頼</div></div><div class="mini-card"><div class="mini-card-title">Few-Shotプロンプティング</div><div class="mini-card-desc">質問の前に<strong>2〜3個の入力・出力の例</strong>を提示する手法。AIが例のパターンを「お手本」として参照し、それに沿った回答を生成します。複雑なタスクやフォーマット指定に効果的です。<br><br>ただし例示はその場限りの文脈であり、<strong>モデルの恒久的な学習にはなりません</strong>。</div><div class="mini-card-example">例：「良い→Good、猫→Cat、犬→」→パターンを示してから質問</div></div></div><div class="mini-quiz" data-quiz="q5"><div class="mini-quiz-title">確認クイズ</div><div class="mini-quiz-question">Few-Shotプロンプティングで例示を与えると、AIのモデルはどうなる？</div><div class="mini-quiz-options"><button data-correct="true">その場の文脈として参考にするだけ</button><button data-correct="false">モデル自体が恒久的に学習する</button></div><div class="mini-quiz-answer">例示はプロンプト内の一時的な文脈にすぎません。モデルの重み（パラメータ）が変わるわけではなく、別の会話では効果が引き継がれません。</div></div>`,
+    summary: `Few-Shotプロンプティングの例示は<strong>一時的な文脈（お手本）</strong>であり、<strong>AIモデル自体の恒久的な学習にはなりません</strong>。これが不適切な選択肢のポイントです。`,
+    related: [{ qIndex: 3, keyword: 'プロンプトの構成要素' }]
+  },
+
+  // ============================================================
+  // Section 3: LLMプロンプティングの実践（Q6〜Q7）
+  // ============================================================
+
+  // Q6: プロンプティング実践（文章操作系）
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'テキスト生成AIにおけるプロンプティングの実践に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '文章の校正をAIに依頼する場合、「校正してください」と指示するだけでは不十分であり、校正の観点（誤字脱字・文法・表現の統一など）を指定するとより正確な結果が得られる',
+      '文章の要約をAIに依頼する場合、元の文章の長さに関係なく、常に一定の長さの要約が自動的に出力される',
+      '箇条書きを文章に変換する際、AIは元の箇条書きの順番を必ず維持するため、順番の指定は不要である',
+      '文章の対象を変更する（例：専門家向け→子供向け）ことは、現在の生成AIの技術では実現できない'
+    ],
+    correct: 0,
+    simple: `テキスト生成AIに文章操作を依頼する際は、<strong>具体的な指示</strong>を与えるほど出力の質が上がります。校正なら<strong>「何を基準に校正するか」</strong>を指定し、要約なら<strong>「何文字程度で」</strong>と長さを伝え、対象変更なら<strong>「誰向けに」</strong>を明示します。プロンプトは「丸投げ」ではなく「具体的な注文」が基本です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">「チェックお願い」だけでは、AIも迷う</div><div class="story-text">新人編集者が先輩に原稿チェックを頼む場面を想像してください。<br><br>「チェックお願いします」とだけ言ったら、先輩は何をチェックすればいいか迷いますよね。誤字脱字？文法？文体の統一？事実確認？<br><br>生成AIへのプロンプトもまったく同じです。<strong>「校正してください」だけでは、AIもどの観点でチェックすべきか迷う</strong>。「誤字脱字と文法ミスを修正し、修正箇所を太字で示してください」のように具体的に書くと、的確な結果が返ってきます。<br><br><strong>要約</strong>も同じ原理です。「要約して」だけでは、AIは自分の判断で長さを決めてしまいます。「200文字以内で」「3つのポイントに絞って」と条件を添えることで、望む形の要約に近づきます。<br><br><strong>対象の変更</strong>も生成AIが得意とする操作です。「この文章を小学3年生にも分かるように書き直して」と指示すれば、専門用語を噛み砕いた文章に変換できます。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">共通原則</span></div><div class="advice-text">プロンプティング実践の共通原則は「<strong>AIに具体的な注文をつける</strong>」こと。曖昧な指示は曖昧な出力を生みます。校正の観点、要約の長さ、対象読者など、<strong>条件を明示するほど精度が上がる</strong>と覚えましょう。</div></div>`,
+    summary: `プロンプティング実践の基本は<strong>「具体的な指示」</strong>。校正の観点、要約の長さ、対象読者などを<strong>明示するほど出力の質は向上</strong>します。`,
+    related: []
+  },
+
+  // Q7: プロンプティング実践（話者・視点操作系）
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'テキスト生成AIにおける話者の設定や視点の操作に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      '「あなたは〇〇の専門家です」のように話者（役割）を設定すると、AIはその分野に関連する知識や表現を優先して回答を生成する',
+      '話者の設定を変更しても、AIの出力内容や表現はまったく変わらない',
+      '文章を会話形式に変換することは生成AIでは不可能であり、人間が手作業で行う必要がある',
+      '例え話を使った説明を生成AIに依頼しても、AIは比喩表現を理解できないため適切な出力は得られない'
+    ],
+    correct: 0,
+    simple: `生成AIに<strong>「あなたは〇〇の専門家です」</strong>と役割を与えると、AIはその分野に合わせた語彙や表現で回答します。また、文章を<strong>会話形式に変換</strong>したり、<strong>例え話</strong>を使って説明させたりすることも可能です。これらはすべて「<strong>同じ情報でも、伝え方を変える</strong>」というプロンプティングの重要な技法です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">同じ内容でも、「誰が」話すかで変わる</div><div class="story-text">同じ内容でも、「誰が」「誰に向けて」話すかで伝え方はまったく変わります。<br><br>たとえば「AIの仕組み」を説明するとき：<br>・「あなたはAIの研究者です」→ 技術的な用語を交えた専門的な説明<br>・「あなたは小学校の先生です」→ 身近な例え話を使った分かりやすい説明<br>・「あなたは経営コンサルタントです」→ ビジネス活用に焦点を当てた説明<br><br>生成AIはこの「<strong>役割の切り替え</strong>」がとても得意です。プロンプトの冒頭で話者を設定するだけで、語彙・文体・視点が一気に変わります。<br><br>さらに、<strong>文章→会話への変換</strong>（「この説明を先生と生徒の対話形式にして」）や、<strong>例え話の生成</strong>（「この概念を料理に例えて説明して」）も実践的なプロンプティング技法です。<br><br>これらに共通するのは、<strong>情報そのものを変えるのではなく「届け方」を変える</strong>ということ。第5章の実践テクニックの中でも特に実用的な技法です。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">Q6との違い</span></div><div class="advice-text">Q6の文章操作系は「<strong>形式を変える</strong>」（校正・要約・箇条書き変換など）。Q7の話者・視点操作系は「<strong>伝え方を変える</strong>」（役割設定・会話変換・例え話など）。どちらもプロンプティングの実践テクニックですが、操作の方向が異なります。</div></div>`,
+    summary: `話者の設定（役割付与）は<strong>AIの語彙・文体・視点を切り替える</strong>効果的な技法。会話変換や例え話の生成も、<strong>情報の「届け方」を変える</strong>プロンプティングの実践です。`,
+    related: [{ qIndex: 5, keyword: 'プロンプティング実践' }]
+  },
+
+  // ============================================================
+  // Section 4: テキスト生成AIを用いたビジネス応用（Q8）
+  // ============================================================
+
+  // Q8: ビジネス応用 ★不適切★
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'テキスト生成AIを用いたビジネス応用に関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      'テキスト生成AIを用いれば、伝えたい要件を入力することで、ビジネスメールの文面を作成することができる',
+      'テキスト生成AIにアンケートの自由記述回答を入力し、傾向の分析や分類を行わせることができる',
+      'テキスト生成AIは大量のデータで学習しているため、生成した文章にプライバシーに関する情報や事実と異なる内容が含まれる可能性はない',
+      'テキスト生成AIを用いて業務の手順を分解したり、文章からタスクを抽出したりすることで、業務効率化に活用できる'
+    ],
+    correct: 2,
+    simple: `テキスト生成AIは、メール作成・アンケート分析・タスク抽出・翻訳など、幅広いビジネスシーンで活用できます。ただし、生成された文章には<strong>プライバシーに関する情報が含まれる可能性</strong>や、<strong>事実と異なる内容（ハルシネーション）が混在する可能性</strong>が常にあります。「AIが生成したから安全」と無条件に信頼せず、必ず人間が確認することが重要です。`,
+    deepdive: `<div class="story-block"><div class="story-lead">AIの出力は「下書き」。最終チェックは人間の仕事</div><div class="story-text">ある会社のマーケティング担当者が、テキスト生成AIを業務に導入しました。<br><br>まず<strong>顧客向けメール</strong>。要件を箇条書きで入力するだけで、丁寧な文面が一瞬で完成。次に<strong>アンケート分析</strong>。数百件の自由記述回答をAIに投入し、「肯定的・否定的・要望」の3カテゴリに自動分類。さらに<strong>会議のアジェンダ</strong>や<strong>業務手順の分解</strong>にも活用し、業務効率が大幅に向上しました。<br><br>しかし、ある日問題が発生します。AIが生成したメール文に、学習データに含まれていたと思われる<strong>他社の担当者名</strong>がそのまま出てしまったのです。<br><br>テキスト生成AIは大量のデータで学習しているため、<strong>プライバシーに関する情報が意図せず出力に紛れ込む可能性</strong>があります。また<strong>ハルシネーション</strong>（事実と異なる情報の生成）のリスクも常に存在します。<br><br>ビジネスで活用する際の鉄則：<strong>AIの出力は「下書き」であり、最終チェックは必ず人間が行う</strong>。</div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">試験での定番パターン</span></div><div class="advice-text">「<strong>可能性はない</strong>」「<strong>完全に安全</strong>」のような<strong>断定表現は不適切な選択肢の可能性が高い</strong>。生成AIの出力には常にリスクが伴うことを理解しているかが問われます。</div></div>`,
+    summary: `テキスト生成AIはビジネスに幅広く活用できるが、<strong>プライバシー情報の混入やハルシネーションのリスクは常に存在</strong>します。「可能性はない」が不適切なポイントです。`,
+    related: [{ qIndex: 5, keyword: 'プロンプティング実践' }]
+  },
+
+  // ============================================================
+  // Section 5: テキスト生成AIの不得意なこと（Q9）
+  // ============================================================
+
+  // Q9: テキスト生成AIの不得意なこと
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'テキスト生成AIの得意・不得意に関する次の記述のうち、最も適切なものを選べ。',
+    choices: [
+      'テキスト生成AIは正確な文字数の指定が苦手であり、「ちょうど100文字で書いて」と指示しても、指定通りの文字数にならないことが多い',
+      'テキスト生成AIは大量のデータで学習しているため、常に最新の情報に基づいた回答を出力することができる',
+      'テキスト生成AIは複雑な数式の計算を最も得意としており、計算結果は常に正確である',
+      'テキスト生成AIは芸術作品の批評が得意であり、客観的で正確な評価を行うことができる'
+    ],
+    correct: 0,
+    simple: `テキスト生成AIには<strong>不得意な分野</strong>があります。<strong>正確な文字数の指定</strong>が苦手で、指示通りの文字数にならないことが多い点は代表的です。また、<strong>学習データに含まれない最新情報</strong>には対応できず、<strong>計算</strong>も間違えることがあります。<strong>芸術の批評</strong>のような主観的な評価も、客観的・正確とは言えません。`,
+    deepdive: `<div class="card-grid"><div class="mini-card"><div class="mini-card-title">① 正確な文字数の指定</div><div class="mini-card-desc">「100文字で」と指示しても、90文字や120文字になることが多いです。AIは文字数を数えながら書いているのではなく、<strong>自然な文の区切りで生成を止める</strong>ため。</div><div class="mini-card-example">対策：生成後に自分で文字数を確認・調整する</div></div><div class="mini-card"><div class="mini-card-title">② 計算</div><div class="mini-card-desc">簡単な四則演算でも間違えることがあります。言語モデルは「計算する」のではなく<strong>「計算結果っぽい数字を予測する」</strong>ため。</div><div class="mini-card-example">対策：計算は電卓やCode Interpreterなどの専用ツールを使う</div></div><div class="mini-card"><div class="mini-card-title">③ 最新の情報</div><div class="mini-card-desc">学習データには期限（<strong>カットオフ</strong>）があり、それ以降の情報は持っていません。どのAIソフトを使うかによってカットオフの時期は異なります。</div><div class="mini-card-example">対策：最新情報はWeb検索機能との併用で補う</div></div><div class="mini-card"><div class="mini-card-title">④ 芸術の批評</div><div class="mini-card-desc">芸術の評価には<strong>主観・文化的背景・感性</strong>が必要です。AIは「よくある批評パターン」を生成できますが、独自の審美眼は持っていません。</div><div class="mini-card-example">客観的・正確な評価とは言えない</div></div></div><div class="advice-box understand-type"><div class="advice-header"><span class="advice-badge">理解ポイント</span><span class="advice-header-text">なぜ苦手なのか？</span></div><div class="advice-text">これらの不得意はすべて、AIの<strong>「次の単語を確率的に予測する」という仕組みの限界</strong>に起因しています。Q1で学んだ言語モデルの原理とつなげて理解しましょう。</div></div>`,
+    summary: `テキスト生成AIの不得意は<strong>文字数指定・計算・最新情報・芸術批評</strong>の4つ。これらはAIの「次の単語を予測する」仕組みの限界に起因しています。`,
+    related: [{ qIndex: 2, keyword: 'Temperature / Top-p' }]
+  },
+
+  // ============================================================
+  // Section 6: 第5章横断総合（Q10）
+  // ============================================================
+
+  // Q10: 第5章横断総合 ★不適切★
+  {
+    chapter: '第5章 テキスト生成AIのプロンプト制作と実例',
+    question: 'テキスト生成AIのプロンプト制作と活用に関する次の記述のうち、<strong>不適切なもの</strong>はどれか。',
+    choices: [
+      '言語モデルは「次に来る単語を確率的に予測する」仕組みであり、プロンプトの書き方によって出力が大きく変わるのはこの原理に基づいている',
+      'Few-Shotプロンプティングで例示を与えることで、Zero-Shotよりも望ましい形式の出力を得やすくなる',
+      'Temperatureを低く設定すると出力の多様性が増し、高く設定すると正確で安定した出力が得られる',
+      'テキスト生成AIをビジネスで活用する際は、出力内容に事実と異なる情報が含まれていないか、人間が確認する必要がある'
+    ],
+    correct: 2,
+    simple: `Temperatureの効果は<strong>「高い＝多様・創造的」「低い＝安定・正確」</strong>です。選択肢3はこの関係が<strong>逆</strong>になっており、不適切です。言語モデルの原理（次の単語の確率予測）を理解していれば、プロンプトの工夫で出力が変わる理由も、Temperatureの効果も、AIの限界も、すべてつながって見えてきます。`,
+    deepdive: `<div class="story-block"><div class="story-lead">第5章を一本の線でつなぐ</div><div class="story-text">第5章で学んだことを、一本の線でつないでみましょう。<br><br>出発点は<strong>言語モデルの原理</strong>。AIは次の単語を確率的に予測し続けることで文章を生成している。考えているのではなく、予測しているだけ。<br><br>だからこそ<strong>プロンプトの書き方</strong>が重要になる。命令・文脈・入力データ・出力指示の4要素を意識し、Zero-ShotやFew-Shotを使い分けることで、予測の方向を自分の望む方へ導ける。<br><br>そして<strong>Temperature</strong>のようなパラメータで、予測の「幅」も調整できる。正確さが欲しければ低く、創造性が欲しければ高く。<br><br>しかし、確率予測の仕組みである以上、<strong>文字数を正確に数えること、計算を正確に行うこと、最新情報を持っていること、芸術を評価すること</strong>は原理的に苦手。<br><br>すべてが<strong>「確率的な次の単語の予測」</strong>という一つの原理から理解できる。これが第5章の全体像です。</div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">Temperatureの方向</span></div><div class="advice-text">Temperatureの方向を逆に書いた選択肢は試験の定番パターンです。<strong>Temperature 高い→多様・創造的 / 低い→安定・正確</strong>。この対応を確実に覚えましょう。</div></div>`,
+    summary: `Temperatureは<strong>高い＝多様・創造的、低い＝安定・正確</strong>。この関係が逆になっている選択肢3が不適切です。`,
+    related: [{ qIndex: 2, keyword: 'Temperature / Top-p' }, { qIndex: 8, keyword: '不得意なこと' }]
+  }
+];
+
+const total = questions.length;
+let currentQ = 0, selectedIdx = null, correctCount = 0, wrongCount = 0;
+
+function showScreen(id) {
+  ['step1','step2','stepDeepDive','step3','step4','stepComplete'].forEach(s =>
+    document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function updateProgress() {
+  const pct = Math.round((currentQ / total) * 100);
+  document.getElementById('progressLabel').textContent = `${total}問中${currentQ+1}問目`;
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function renderChoices(containerId, choices, clickable) {
+  const c = document.getElementById(containerId); c.innerHTML = '';
+  choices.forEach((text, i) => {
+    const d = document.createElement('div');
+    d.className = clickable ? 'choice clickable' : 'choice';
+    d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text}</span>`;
+    if (clickable) d.onclick = () => selectChoice(i);
+    c.appendChild(d);
+  });
+}
+
+function renderRelated(containerId, related) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if (!related || related.length === 0) return;
+  related.forEach(rel => {
+    const q = questions[rel.qIndex];
+    if (!q) return;
+    const block = document.createElement('div');
+    block.className = 'related-block';
+    const toggle = document.createElement('button');
+    toggle.className = 'related-toggle';
+    toggle.innerHTML = `<span class="toggle-icon">▶</span> 関連：${rel.keyword}（問題${rel.qIndex+1}）`;
+    const content = document.createElement('div');
+    content.className = 'related-content';
+    content.innerHTML = `<div class="related-content-inner"><div class="related-q-label">問題${rel.qIndex+1}のかんたん解説</div>${q.simple}</div>`;
+    toggle.onclick = () => {
+      toggle.classList.toggle('open');
+      if (content.classList.contains('open')) {
+        content.style.maxHeight = '0';
+        content.classList.remove('open');
+      } else {
+        content.classList.add('open');
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    };
+    block.appendChild(toggle);
+    block.appendChild(content);
+    container.appendChild(block);
+  });
+}
+
+function initMiniQuizzes() {
+  document.querySelectorAll('.mini-quiz-options button').forEach(btn => {
+    btn.classList.remove('quiz-correct', 'answered');
+  });
+  document.querySelectorAll('.mini-quiz-answer').forEach(el => {
+    el.classList.remove('show');
+  });
+}
+
+function setupMiniQuizzes() {
+  document.querySelectorAll('.mini-quiz').forEach(quiz => {
+    const buttons = quiz.querySelectorAll('.mini-quiz-options button');
+    const answer = quiz.querySelector('.mini-quiz-answer');
+    let answered = false;
+    buttons.forEach(btn => {
+      btn.onclick = () => {
+        if (answered) return;
+        answered = true;
+        buttons.forEach(b => {
+          if (b.dataset.correct === 'true') {
+            b.classList.add('quiz-correct');
+          } else {
+            b.classList.add('answered');
+          }
+        });
+        answer.classList.add('show');
+      };
+    });
+  });
+}
+
+function loadQuestion(idx) {
+  const q = questions[idx];
+  const qnum = `問題 ${idx+1}`;
+  document.getElementById('s1-qnum').textContent = qnum;
+  document.getElementById('s1-qtext').innerHTML = q.question;
+  renderChoices('s1-choices', q.choices, false);
+  document.getElementById('s2-qtext').innerHTML = q.question;
+  document.getElementById('s2-simple').innerHTML = q.simple;
+  renderRelated('s2-related', q.related);
+  document.getElementById('deepdive-content').innerHTML = q.deepdive;
+  document.getElementById('s3-qnum').textContent = qnum;
+  document.getElementById('s3-qtext').innerHTML = q.question;
+  renderChoices('s3-choices', q.choices, true);
+  selectedIdx = null;
+  document.getElementById('answerBtn').classList.add('hidden');
+  requestAnimationFrame(() => { initMiniQuizzes(); setupMiniQuizzes(); });
+}
+
+function showStep2() { showScreen('step2'); }
+function showDeepDive() { showScreen('stepDeepDive'); }
+function showStep3() {
+  showScreen('step3');
+  selectedIdx = null;
+  document.querySelectorAll('#s3-choices .choice').forEach(c => c.className = 'choice clickable');
+  document.getElementById('answerBtn').classList.add('hidden');
+}
+
+function selectChoice(idx) {
+  selectedIdx = idx;
+  document.querySelectorAll('#s3-choices .choice').forEach(c => c.className = 'choice clickable');
+  document.querySelectorAll('#s3-choices .choice')[idx].classList.add('selected');
+  document.getElementById('answerBtn').classList.remove('hidden');
+}
+
+function showResult() {
+  const q = questions[currentQ], isCorrect = selectedIdx === q.correct;
+  if (isCorrect) correctCount++; else wrongCount++;
+  document.getElementById('resultBox').innerHTML = isCorrect
+    ? `<span class="result-icon">🌸</span><div class="result-title correct">正解！</div>`
+    : `<span class="result-icon">💭</span><div class="result-title wrong">惜しい！</div>`;
+  const s4 = document.getElementById('s4-choices'); s4.innerHTML = '';
+  q.choices.forEach((text, i) => {
+    const d = document.createElement('div');
+    if (i === q.correct) { d.className = 'choice correct'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text} ✓</span>`; }
+    else if (i === selectedIdx && !isCorrect) { d.className = 'choice wrong'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text} ✗</span>`; }
+    else { d.className = 'choice'; d.innerHTML = `<div class="choice-num">${i+1}</div><span>${text}</span>`; }
+    s4.appendChild(d);
+  });
+  document.getElementById('s4-summary').innerHTML = q.summary;
+  const nb = document.getElementById('nextBtn');
+  if (currentQ === questions.length - 1) { nb.textContent = '結果を見る 🌸'; nb.className = 'btn btn-gold'; }
+  else { nb.textContent = '次の問題へ進む →'; nb.className = 'btn btn-success'; }
+  showScreen('step4');
+}
+
+function nextQuestion() {
+  if (currentQ === questions.length - 1) { showComplete(); return; }
+  currentQ++;
+  loadQuestion(currentQ);
+  updateProgress();
+  showScreen('step1');
+}
+
+function showComplete() {
+  document.getElementById('correctCount').textContent = correctCount;
+  document.getElementById('wrongCount').textContent = wrongCount;
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressPct').textContent = '100%';
+  document.getElementById('progressLabel').textContent = `${total}問中${total}問目`;
+  const pct = correctCount / questions.length;
+  let msg = pct === 1 ? '全問正解！素晴らしいです🌸\n全5章の学習が完了しました！自信を持って試験に臨みましょう。'
+    : pct >= 0.8 ? 'とてもよくできました！\n間違えた問題だけもう一度確認してみましょう。'
+    : pct >= 0.6 ? 'まずまずです！\n間違えた問題の解説を読み直してから、もう一度チャレンジを。'
+    : 'もう一度チャレンジしてみましょう！\n深掘り解説をじっくり読んでから再挑戦すると定着します。';
+  document.getElementById('completeMessage').textContent = msg;
+  showScreen('stepComplete');
+}
+
+function restartQuiz() {
+  currentQ = 0; selectedIdx = null; correctCount = 0; wrongCount = 0;
+  loadQuestion(0);
+  updateProgress();
+  showScreen('step1');
+}
+
+loadQuestion(0);
+updateProgress();
+showScreen('step1');
+</script>
+</body>
+</html>
