@@ -516,11 +516,11 @@
   <!-- 完了画面 -->
   <div class="card hidden" id="stepComplete">
     <div class="complete-box">
-      <span class="complete-icon">🌸</span>
+      <span class="complete-icon">🎊</span>
       <div class="complete-title">3問 完走！</div>
 
       <div class="complete-message" id="completeMessage"></div>
-      <button class="btn btn-gold" onclick="restartQuiz()">もう一度チャレンジする 🌸</button>
+      <button class="btn btn-gold" onclick="restartQuiz()">もう一度チャレンジする</button>
     </div>
   </div>
 
@@ -887,7 +887,7 @@ function nextQuestion() {
 }
 
 function showComplete() {
-  document.getElementById('completeMessage').textContent='お疲れさまでした！🌸\n3問、最後までやり遂げました。すごい！';
+  document.getElementById('completeMessage').textContent='お疲れさまでした！\n最後までやり遂げました。すごい！';
   showScreen('stepComplete');
 }
 
