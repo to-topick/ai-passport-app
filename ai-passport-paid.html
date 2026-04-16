@@ -2401,7 +2401,7 @@ function showResult() {
     const prog = getProgress(ch.id);
     prog.answers = sessionAnswers;
     // completed when all done
-    saveProgress(ch.id, sessionAnswers, false, currentQIdx);
+    saveProgress(ch.id, sessionAnswers, false, currentQIdx + 1);
   }
 
   hideAllQuizPanels();
