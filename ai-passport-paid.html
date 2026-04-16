@@ -2545,7 +2545,7 @@ function toggleTTS() {
   const icon = document.getElementById('ttsIcon');
   const label = document.getElementById('ttsBtnLabel');
   if(currentAudio && !currentAudio.paused) { stopTTS(); return; }
-  const q = isTutorial ? null : questions[currentQ];
+  const q = questions[currentQ];
   const src = q && q.audioFile ? q.audioFile : null;
   if(!src) return;
   const audio = new Audio(src);
