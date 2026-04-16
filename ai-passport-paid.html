@@ -2225,7 +2225,7 @@ function startChapter(chapterIdx) {
   const ch2 = chapters[chapterIdx]; const savedProgress = getProgress(ch2.id);
   const savedQIdx = savedProgress.qIdx || 0;
   if (savedQIdx > 0 && !savedProgress.completed) {
-    const resume = confirm(`${savedQIdx + 1}問目まで進んでいます。\n続きから再開しますか？\n\n「キャンセル」で最初から始めます。`);
+    const resume = confirm(`${savedQIdx}問目まで回答完了しています。\n続きから再開しますか？\n\n「キャンセル」で最初から始めます。`);
     currentQIdx = resume ? savedQIdx : 0;
   } else {
     currentQIdx = 0;
