@@ -2207,7 +2207,45 @@ function renderChapterSelect() {
       <div class="chapter-card-arrow">›</div>
     `;
     card.id = `chCard${ch.id}`;
-    card.onclick = () => startChapter(idx);
+    let longPressActivated = false;
+    card.onclick = (e) => {
+      if (longPressActivated) {
+        longPressActivated = false;
+        return;
+      }
+      startChapter(idx);
+    };
+
+    // 長押しで章の進捗リセット
+    let longPressTimer = null;
+    const LONG_PRESS_MS = 500;
+
+    const startLongPress = () => {
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        longPressActivated = true;
+        const confirmed = confirm(`「${ch.title}」の進捗をリセットしますか？\nこの操作は元に戻せません。`);
+        if (confirmed) {
+          localStorage.removeItem(`ch${ch.id}_progress`);
+          renderChapters();
+        }
+      }, LONG_PRESS_MS);
+    };
+
+    const cancelLongPress = () => {
+      if (longPressTimer !== null) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
+    // 長押し完了後のclickイベントでstartChapterが発火しないよう抑制
+    card.addEventListener('mousedown', startLongPress);
+    card.addEventListener('mouseup', cancelLongPress);
+    card.addEventListener('mouseleave', cancelLongPress);
+    card.addEventListener('touchstart', startLongPress, { passive: true });
+    card.addEventListener('touchend', cancelLongPress);
+    card.addEventListener('touchcancel', cancelLongPress);
     container.appendChild(card);
   });
 }
