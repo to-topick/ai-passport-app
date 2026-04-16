@@ -2222,7 +2222,7 @@ function startChapter(chapterIdx) {
 
   // Build question list (all questions, fresh order)
   currentQuestionList = ch.questions.map((q, i) => ({ ...q, _origIdx: i }));
-  const savedProgress = getProgress(chapterIdx);
+  const ch2 = chapters[chapterIdx]; const savedProgress = getProgress(ch2.id);
   const savedQIdx = savedProgress.qIdx || 0;
   if (savedQIdx > 0 && !savedProgress.completed) {
     const resume = confirm(`${savedQIdx + 1}問目まで進んでいます。\n続きから再開しますか？\n\n「キャンセル」で最初から始めます。`);
