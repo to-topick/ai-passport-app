@@ -2141,9 +2141,9 @@ function getProgress(chapterId) {
   }
 }
 
-function saveProgress(chapterId, answers, completed) {
+function saveProgress(chapterId, answers, completed, qIdx) {
   try {
-    localStorage.setItem(`ch${chapterId}_progress`, JSON.stringify({ answers, completed }));
+    localStorage.setItem(`ch${chapterId}_progress`, JSON.stringify({ answers, completed, qIdx: qIdx || 0 }));
   } catch(e) {}
 }
 
@@ -2222,7 +2222,14 @@ function startChapter(chapterIdx) {
 
   // Build question list (all questions, fresh order)
   currentQuestionList = ch.questions.map((q, i) => ({ ...q, _origIdx: i }));
-  currentQIdx = 0;
+  const savedProgress = getProgress(chapterIdx);
+  const savedQIdx = savedProgress.qIdx || 0;
+  if (savedQIdx > 0 && !savedProgress.completed) {
+    const resume = confirm(`${savedQIdx + 1}問目まで進んでいます。\n続きから再開しますか？\n\n「キャンセル」で最初から始めます。`);
+    currentQIdx = resume ? savedQIdx : 0;
+  } else {
+    currentQIdx = 0;
+  }
   sessionAnswers = [];
   selectedChoice = null;
 
@@ -2394,7 +2401,7 @@ function showResult() {
     const prog = getProgress(ch.id);
     prog.answers = sessionAnswers;
     // completed when all done
-    saveProgress(ch.id, sessionAnswers, false);
+    saveProgress(ch.id, sessionAnswers, false, currentQIdx);
   }
 
   hideAllQuizPanels();
