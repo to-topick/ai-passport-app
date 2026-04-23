@@ -248,6 +248,33 @@
   .explanation-text { font-size:14px; line-height:1.9; color:var(--text); }
   .explanation-text strong { color:#c47a40; }
 
+  /* 穴埋めで覚えよう */
+  .btn-branch-anki {
+    width:100%; padding:14px; border-radius:14px;
+    font-size:14px; font-weight:700; font-family:'Zen Maru Gothic',sans-serif; cursor:pointer; transition:all 0.2s ease;
+    background:var(--mint-light); border:1.5px solid rgba(168,213,194,0.6); color:var(--mint-deep);
+  }
+  .btn-branch-anki:hover { background:var(--mint); color:white; border-color:var(--mint); transform:translateY(-2px); box-shadow:0 6px 20px rgba(168,213,194,0.4); }
+  .anki-text { font-size:15px; line-height:2.2; color:var(--text); margin-bottom:20px; padding:18px 20px; background:var(--surface2); border-radius:16px; border-left:3px solid var(--mint); }
+  .anki-blank { display:inline-block; background:var(--mint-light); border:1.5px solid var(--mint); border-radius:6px; padding:1px 12px; font-weight:700; color:var(--mint-deep); min-width:40px; text-align:center; transition:all 0.3s; }
+  .anki-blank.correct { background:var(--mint-light); border-color:var(--mint-deep); color:var(--mint-deep); }
+  .anki-blank.wrong { background:#fdf0f2; border-color:#e8a0aa; color:#993556; }
+  .anki-choices-label { font-size:12px; color:var(--text-light); margin:16px 0 8px; }
+  .anki-choices { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .anki-choice { background:var(--surface); border:1.5px solid rgba(244,167,185,0.2); border-radius:12px; padding:12px 16px; font-size:14px; color:var(--text); cursor:pointer; text-align:left; transition:all 0.2s; display:flex; align-items:center; gap:10px; font-family:'Zen Maru Gothic',sans-serif; }
+  .anki-choice:hover:not(:disabled) { border-color:var(--mint); background:var(--mint-light); }
+  .anki-choice:disabled { opacity:0.4; cursor:default; text-decoration:line-through; }
+  .anki-choice-num { width:22px; height:22px; border-radius:50%; background:var(--mint-light); color:var(--mint-deep); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .anki-feedback { font-size:13px; margin-top:10px; padding:10px 14px; border-radius:10px; display:none; line-height:1.6; }
+  .anki-feedback.ok { background:var(--mint-light); color:var(--mint-deep); display:block; }
+  .anki-feedback.ng { background:#fdf0f2; color:#993556; display:block; }
+  .anki-next { margin-top:14px; width:100%; background:var(--navy); color:white; border:none; border-radius:12px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; display:none; font-family:'Zen Maru Gothic',sans-serif; }
+  .anki-next.show { display:block; }
+  .anki-complete { text-align:center; padding:1rem 0; }
+  .anki-complete-icon { font-size:36px; display:block; margin-bottom:10px; }
+  .anki-complete-msg { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; }
+  .anki-complete-sub { font-size:13px; color:var(--text-light); margin-bottom:20px; }
+
   /* ブランチボタン */
   .branch-buttons { display:flex; flex-direction:column; gap:10px; }
   .btn-branch-more {
@@ -515,10 +542,18 @@
 
       </div>
       <div class="branch-buttons">
+        <button class="btn-branch-anki" id="ankiBtn" onclick="showAnki()" style="display:none;">📝 穴埋めで覚えよう</button>
         <button class="btn-branch-ok" onclick="showStep3()">理解できたので問題を解く →</button>
         <button class="deepdive-link" onclick="showDeepDive()">🔍 もっと詳しく読む</button>
       </div>
       <button class="btn-back" onclick="showStep(1)">← 問題に戻る</button>
+    </div>
+
+    <!-- Anki穴埋め -->
+    <div class="card hidden" id="stepAnki">
+      <div class="step-tag s2">📝 穴埋めで覚えよう</div>
+      <div id="anki-content"></div>
+      <button class="btn-back" onclick="showStep(2)">← かんたん解説に戻る</button>
     </div>
 
     <!-- DeepDive -->
@@ -846,8 +881,16 @@ const ch2Questions = [
       'ボルツマンマシンは生成モデルではなく、データの分類のみを目的とした技術である'
     ],
     correct: 0,
-    simple: `<strong>ボルツマンマシン</strong>は、データのパターンを確率で予測しようとした、1980年代の初期モデルです。ただし計算量が膨大すぎて、当時は実用化できませんでした。<strong>制約付きボルツマンマシン</strong>は、見る情報をあえて絞ることで計算を効率化した、その改良版です。`,
+    simple: `YouTubeを見ていると、気づいたら1時間経っていた——そんな経験はありませんか？<br><br>あれは「この人は次にこの動画を見る確率が高い」とAIが予測しているからです。<br><br>この「確率でパターンを予測する」という発想を持った1980年代の初期モデルが<strong>ボルツマンマシン</strong>です。ただし計算量が膨大すぎて実用化できませんでした。<br><br>そこで「見る情報をあえて絞る」ことで計算を効率化した改良版が<strong>制約付きボルツマンマシン</strong>です。`,
         audioFile: 'audio/paid/q16.mp3',
+    anki: {
+      text: 'この「確率でパターンを予測する」発想を持った1980年代の初期モデルが【A】です。見る情報をあえて絞って効率化した改良版が【B】です。',
+      blanks: [
+        { label: 'A', answer: 'ボルツマンマシン' },
+        { label: 'B', answer: '制約付きボルツマンマシン' }
+      ],
+      choices: ['ボルツマンマシン', '制約付きボルツマンマシン']
+    },
     deepdive: `<div class="story-block"><div class="story-lead">YouTubeが「次の動画」を当ててくるのはなぜ？</div><div class="story-text">YouTubeを見ていると、気づいたら1時間経っていた——そんな経験はありませんか？<br><br>あれは偶然ではありません。YouTubeのAIがあなたの視聴パターンを学習して、「この人は次にこの動画を見る確率が高い」と予測しているからです。<br><br><strong>ボルツマンマシン</strong>は、まさにこの「パターンを確率で学習する」という考え方を持った、1980年代の初期モデルです。<br><br>「この映像を見た人は、次にこういう映像を見やすい」「こういう組み合わせで物事が起きやすい」——そういった<strong>確率的なパターン</strong>をデータから学習することを目指していました。<br><br>ただし当時は、すべての<strong>ノード（点）</strong>が互いに接続されていたため計算量が膨大で、実用には至りませんでした。<br><br>そこで生まれたのが<strong>制約付きボルツマンマシン</strong>。同じ<strong>層（グループ）</strong>のノード同士は接続しないというルールを設けることで計算を大幅に効率化し、ディープラーニングの事前学習にも活用されました。<br><br>今のYouTubeやNetflixのレコメンド機能につながる「確率でパターンを学ぶ」という発想の原点が、ここにあります。</div></div><div class="advice-box memory-type"><div class="advice-header"><span class="advice-badge">暗記ポイント</span><span class="advice-header-text">セットで覚えよう</span></div><div class="keyword-list"><div class="keyword-item"><span class="keyword-num">①</span><div><div class="keyword-text">ボルツマンマシン</div><div class="keyword-note">確率パターンを学習。計算コストが高い</div></div></div><div class="keyword-item"><span class="keyword-num">②</span><div><div class="keyword-text">制約付きボルツマンマシン</div><div class="keyword-note">接続を制限して効率化した改良版</div></div></div></div></div>`,
     summary: `ボルツマンマシンは<strong>確率的パターンを学習するニューラルネットワーク</strong>で、生成モデルの原点です。制約付きは「接続を制限して効率化」がポイント。`,
     related: []
@@ -2199,6 +2242,7 @@ function renderChapterSelect() {
           </div>
           <div class="chapter-card-progress-text">${answered}/${total}問</div>
         </div>
+        ${ch.id === 2 ? `<div style="font-size:11px;color:#c47a40;margin-top:6px;">⚠️ この章は最も専門用語が多く、難易度が高めです。</div>` : ''}
         ${(isComplete || isPerfect) ? `<div class="chapter-card-badges">
           ${isComplete ? '<span class="badge badge-complete">✓ 完了</span>' : ''}
           ${isPerfect ? '<span class="badge badge-perfect">⭐ 全問正解</span>' : ''}
@@ -2355,8 +2399,94 @@ function updateProgressBar() {
   document.getElementById('quizProgressFill').style.width = pct + '%';
 }
 
+function showAnki() {
+  hideAllQuizPanels();
+  stopTTS();
+  const q = currentQuestionList[currentQIdx];
+  if (!q.anki) return;
+  const anki = q.anki;
+  let ankiCurrentBlank = 0;
+  let shuffledChoices = [...anki.choices].sort(() => Math.random() - 0.5);
+
+  function buildText() {
+    let t = anki.text;
+    anki.blanks.forEach(b => {
+      t = t.replace(`【${b.label}】`, `<span class="anki-blank" id="anki-blank-${b.label}">${b.label}</span>`);
+    });
+    return t;
+  }
+
+  function updateQuestion() {
+    if (ankiCurrentBlank < anki.blanks.length) {
+      const label = anki.blanks[ankiCurrentBlank].label;
+      document.getElementById('anki-question-label').textContent = `【${label}】に入る用語はどれ？`;
+    }
+  }
+
+  function render() {
+    document.getElementById('anki-content').innerHTML = `
+      <div class="anki-text" id="anki-text">${buildText()}</div>
+      <div class="anki-choices-label" id="anki-question-label"></div>
+      <div class="anki-choices" id="anki-choices">
+        ${shuffledChoices.map((c, i) => `
+          <button class="anki-choice" id="anki-c-${i}" onclick="ankiSelect('${c.replace(/'/g,"\\'")}', ${i})">
+            <span class="anki-choice-num">${i + 1}</span>${c}
+          </button>
+        `).join('')}
+      </div>
+      <div class="anki-feedback" id="anki-feedback"></div>
+      <button class="anki-next" id="anki-next" onclick="ankiComplete()">問題を解く →</button>
+    `;
+    updateQuestion();
+  }
+
+  window.ankiSelect = function(val, btnIdx) {
+    if (ankiCurrentBlank >= anki.blanks.length) return;
+    const target = anki.blanks[ankiCurrentBlank];
+    const blankEl = document.getElementById('anki-blank-' + target.label);
+    const fb = document.getElementById('anki-feedback');
+    if (val === target.answer) {
+      blankEl.textContent = val;
+      blankEl.classList.add('correct');
+      document.getElementById('anki-c-' + btnIdx).disabled = true;
+      fb.textContent = '正解！';
+      fb.className = 'anki-feedback ok';
+      ankiCurrentBlank++;
+      if (ankiCurrentBlank >= anki.blanks.length) {
+        setTimeout(() => {
+          document.getElementById('anki-choices').style.display = 'none';
+          document.getElementById('anki-question-label').style.display = 'none';
+          fb.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:0.5rem 0;"><span style="font-size:28px;">🎉</span><span style="font-size:15px;font-weight:700;color:var(--mint-deep);">用語の確認完了！</span></div>';
+          fb.className = 'anki-feedback ok';
+          document.getElementById('anki-next').classList.add('show');
+        }, 800);
+      } else {
+        setTimeout(() => { fb.className = 'anki-feedback'; updateQuestion(); }, 800);
+      }
+    } else {
+      blankEl.textContent = val;
+      blankEl.classList.add('wrong');
+      fb.textContent = `違います。${target.label}に入るのは「${target.answer}」です。`;
+      fb.className = 'anki-feedback ng';
+      setTimeout(() => {
+        blankEl.classList.remove('wrong');
+        blankEl.textContent = target.label;
+        fb.className = 'anki-feedback';
+      }, 1200);
+    }
+  };
+
+  window.ankiComplete = function() {
+    showStep3();
+  };
+
+  render();
+  document.getElementById('stepAnki').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
 function hideAllQuizPanels() {
-  ['step1','step2','stepDeepDive','step3','step4','stepComplete'].forEach(id => {
+  ['step1','step2','stepDeepDive','stepAnki','step3','step4','stepComplete'].forEach(id => {
     document.getElementById(id).classList.add('hidden');
   });
 }
@@ -2394,6 +2524,8 @@ function showStep2Internal(q, qLabel) {
   document.getElementById('s2-qnum').textContent = qLabel;
   document.getElementById('s2-qtext').innerHTML = q.question;
   document.getElementById('s2-simple').innerHTML = q.simple || '';
+  const ankiBtn = document.getElementById('ankiBtn');
+  if (ankiBtn) ankiBtn.style.display = q.anki ? 'block' : 'none';
   document.getElementById('step2').classList.remove('hidden');
   window.scrollTo(0, 0);
 }
